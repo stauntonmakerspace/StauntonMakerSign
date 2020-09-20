@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title></title>
+    <meta charset='utf-8'>
+    <style>
+        body {
+            margin: 0;
+        }
+
+        .cnvs {
+            outline: #000000 1px solid;
+        }
+    </style>
+
+    <script src='https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js'></script>
+</head>
+
+<body>
+    <div id='canvasesdiv' style='position:relative; width:900px; height:500px'>
+        <canvas id='paint_layer' style='z-index: 1;
+                position:absolute;
+                left:0px;
+                top:0px;
+                ' height='500px' width='900px'>
+            This text is displayed if your browser does not support HTML5 Canvas.
+        </canvas>
+        <canvas id='word_layer' style='z-index: 2;
+                position:absolute;
+                left:0px;
+                top:0px;
+                ' height='500px' width='900px'>
+            This text is displayed if your browser does not support HTML5 Canvas.
+        </canvas>
+    </div>
+
+    <div>
+        <input type='color' id='color'>
+        <button type='button' id='reset'>Reset Canvas</button>
+        <input type='submit' id='send'>
+
+        <p>Rerecord Led Layout:</p>
+        <table>
+            <tr>
+                <th>Paint</th>
+                <th>M</th>
+                <th>a</th>
+                <th>k</th>
+                <th>e</th>
+                <th>r</th>
+                <th>S</th>
+                <th>P</th>
+                <th>A</th>
+                <th>C</th>
+                <th>e</th>
+            </tr>
+            <tr>
+                <td><input type='radio' name='letter' checked='true' value='Paint'></td>
+                <td><input type='radio' name='letter' value=0></td>
+                <td><input type='radio' name='letter' value=1></td>
+                <td><input type='radio' name='letter' value=2></td>
+                <td><input type='radio' name='letter' value=3></td>
+                <td><input type='radio' name='letter' value=4></td>
+                <td><input type='radio' name='letter' value=5></td>
+                <td><input type='radio' name='letter' value=6></td>
+                <td><input type='radio' name='letter' value=7></td>
+                <td><input type='radio' name='letter' value=8></td>
+                <td><input type='radio' name='letter' value=9></td>
+            </tr>
+        </table>
+        <p>Points Remaining:
+        <div id='remaining'></div>
+        </p>
+        <button type='button' id='clear'>Clear Points</button>
+    </div>
+    <video id='video' src='https://upload.wikimedia.org/wikipedia/commons/7/79/Big_Buck_Bunny_small.ogv'
+        controls='false' crossorigin='anonymous'></video>
+
+    <script>
+        // Main Function 
+        (function (w, d) {
+            'use strict';
+
+            var action = 'up',
+                canvas = d.querySelector('#paint_layer'),
+                paint_ctx = canvas.getContext('2d'),
+                words = d.querySelector('#word_layer'),
+                words_ctx = words.getContext('2d'),
+                color = d.querySelector('#color'),
+                record = d.querySelector('#record'),
+                body = d.querySelector('body'),
+                offset = 1000,
+                lineWidth = 10,
+                shadowBlur = 10,
+                points = [],
+                bufer = paint_ctx.getImageData(0, 0, canvas.width, canvas.height),
+                radio_selection = 'Paint',
+                led_counts = { 0: 10, 1: 10, 2: 10, 3: 10, 4: 10, 5: 10, 6: 10, 7: 10, 8: 10, 9: 10 },
+                control_points = { 0: [[0, 0]], 1: [[0, 0]], 2: [[0, 0]], 3: [[0, 0]], 4: [[0, 0]], 5: [[0, 0]], 6: [[0, 0]], 7: [[0, 0]], 8: [[0, 0]], 9: [[0, 0]] },
+                point_history = { 0: [[0, 0, 0]], 1: [[0, 0, 0]], 2: [[0, 0, 0]], 3: [[0, 0, 0]], 4: [[0, 0, 0]], 5: [[0, 0, 0]], 6: [[0, 0, 0]], 7: [[0, 0, 0]], 8: [[0, 0, 0]], 9: [[0, 0, 0]] };
+
+            var video = document.getElementById('video');
+            // Setup initial text borders 
+            words_ctx.lineWidth = 3;
+            words_ctx.strokeStyle = 'black';
+            words_ctx.font = ' 150px Arial';
+            words_ctx.strokeText('MakerSPACe', 0, 250);
+            // Sizing for control Points 
+            words_ctx.lineWidth = 2;
+            words_ctx.shadowBlur = 1;
+
+            video.addEventListener('play', function () {
+                var $this = this; //cache
+                (function loop() {
+                    if (!$this.paused && !$this.ended) {
+                        var hRatio = (canvas.width / video.videoWidth) * video.videoHeight;
+                        //console.log($this[0]);
+                        paint_ctx.drawImage($this, 0, 0, canvas.width, hRatio);
+                        setTimeout(loop, 1000 / 30); // drawing at 30fps
+                    }
+                })();
+            });
+            //Generate Arduino Requests
+            var connection = new WebSocket('ws://' + w.location.hostname + ':81/', ['arduino']);
+            connection.onopen = function () {
+            connection.send('Connect ' + new Date());
+            };
+            connection.onerror = function (error) {
+            console.log('WebSocket Error ', error);
+            };
+            connection.onmessage = function (e) {
+            console.log('Server: ', e.data);
+            };
+            connection.onclose = function () {
+            console.log('WebSocket connection closed');
+            };
+
+            function samplePoint(x, y) {
+                var img_data = paint_ctx.getImageData(x, y, 1, 1).data;
+                var R = img_data[0];
+                var G = img_data[1];
+                var B = img_data[2];
+                return [R, G, B];
+            }
+            function sampleCapturePoints() {
+                for (const [device_num, points] of Object.entries(control_points)) {
+                    for (const [index, point] of Object.entries(points)) {
+                        var rgb = samplePoint(point[0], point[1]);
+                        var cmd = device_num.toString() + ',' + index.toString() + ',' + rgb[0].toString() + ',' + rgb[1].toString() + ',' + rgb[2].toString();
+                        if (point_history[index] === cmd) { }
+                        //connection.send(cmd); 
+                        console.log(cmd);
+                    }
+                }
+            }
+            function setCapturePoints() {
+                control_points[radio_selection] = points;
+                points = [];
+            }
+            function resetCanvas() {
+                paint_ctx.clearRect(0, 0, canvas.width, canvas.height);
+                paint_ctx.lineWidth = lineWidth;
+                paint_ctx.shadowColor = '#000000';
+                paint_ctx.shadowBlur = shadowBlur;
+                paint_ctx.shadowOffsetX = -offset;
+                bufer = paint_ctx.getImageData(0, 0, canvas.width, canvas.height);
+            }
+            function runCanvas() {
+                if (points.length > 0) {
+                    if (radio_selection == 'Paint') { // Painting 
+                        paint_ctx.beginPath();
+                        paint_ctx.moveTo(points[0][0] + offset, points[0][1]);
+                        for (var i = 1; i < points.length; i++) {
+                            paint_ctx.lineTo(points[i][0] + offset, points[i][1]);
+                        }
+                    } else {
+                        paint_ctx.beginPath();
+                        for (var i = 1; i < points.length; i++) {
+                            paint_ctx.rect(points[i][0] + offset, points[i][1], 3, 3);
+                        }
+                    }
+                }
+                sampleCapturePoints();
+                setTimeout(runCanvas, 1000 / 60); // drawing at *0fps
+            }
+            d.getElementById('reset').onclick = resetCanvas;
+            body.addEventListener('mouseup', function () {
+                action = 'up';
+                if (radio_selection === 'Paint') { // Painting 
+                    points = [];
+                    bufer = paint_ctx.getImageData(0, 0, canvas.width, canvas.height);
+                } else {
+                    if (points.length === led_counts[radio_selection]) {
+                        setCapturePoints();
+                    }
+                }
+            });
+            body.addEventListener('mousedown', function (e) {
+                action = 'down';
+                points.push([e.pageX, e.pageY]);
+            });
+            body.addEventListener('mousemove', function (e) {
+                if (action === 'down') {
+                    paint_ctx.putImageData(bufer, 0, 0); // Redraw Previous Frame 
+                    if (radio_selection == 'Paint') {
+                        points.push([e.pageX, e.pageY]);
+                    } else {
+                        if (points.length < led_counts[radio_selection]) {
+                            if (Math.sqrt((e.pageX - points[points.length - 1][0]) ** 2 + (e.pageY - points[points.length - 1][1]) ** 2) > 5) {
+                                points.push([e.pageX, e.pageY]);
+                            }
+                        }
+                    }
+                    paint_ctx.stroke();
+                }
+            });
+            $('input[type=radio][name=letter]').change(function () {
+                points = [];
+                paint_ctx.putImageData(bufer, 0, 0); // Clear Marks 
+
+                if (this.value === 'Paint') {
+                    paint_ctx.restore(); // Restore Paint Settings  
+                } else {
+                    if (radio_selection == 'Paint') {
+                        paint_ctx.save();
+                    }
+                    paint_ctx.lineWidth = 2;
+                    paint_ctx.shadowBlur = 1;
+                    paint_ctx.shadowColor = '000000'
+                    for (const [index, point] of Object.entries(control_points[this.value])) {
+                        paint_ctx.strokeRect(point[0] + offset, point[1], 5, 5);
+                    }
+                } radio_selection = this.value;
+            });
+            color.addEventListener('change', function (e) {
+                paint_ctx.shadowColor = e.target.value;
+            });
+
+            resetCanvas();
+            runCanvas();
+        }(window, document));
+
+    </script>
+
+</body>
+
+</html>
