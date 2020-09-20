@@ -13,6 +13,23 @@ void setup()
 }
 
 String cmd;
+// https://stackoverflow.com/questions/9072320/split-string-into-string-array
+String getValue(String data, char separator, int index)
+{
+  int found = 0;
+  int strIndex[] = {0, -1};
+  int maxIndex = data.length()-1;
+
+  for(int i=0; i<=maxIndex && found<=index; i++){
+    if(data.charAt(i)==separator || i==maxIndex){
+        found++;
+        strIndex[0] = strIndex[1]+1;
+        strIndex[1] = (i == maxIndex) ? i+1 : i;
+    }
+  }
+
+  return found>index ? data.substring(strIndex[0], strIndex[1]) : "";
+}
 void SetColor(String incoming) //incoming looks like this -> Q:0x00FF00
 {
   String colorString = incoming.substring(2); // remove Q:
@@ -27,29 +44,25 @@ char* string2char(String command){
         char *p = const_cast<char*>(command.c_str());
         return p;
     }
+    
 }
 
 void loop()
 {
   while (Serial.available() > 0)
   {
-    cmd = Serial.readString();
-    if (cmd[0] == "0")
+    cmd = Serial.readStringUntil(';');
+    if (cmd[0] == '0')
     {
-      int i = 0;
-      int data[5]; // led_num, r,g,b
-      char *p = string2char(Serial.readStringUntil(";"));
       
-      char *str;
-      while ((str = strtok_r(p, ",", &p)) != NULL) data[i++] = atoi(str);
-      
-      leds[data[0]].setRGB(data[1],data[2],data[3]);
+      leds[getValue(cmd,',',1).toInt()].setRGB(getValue(cmd,',',2).toInt(),getValue(cmd,',',3).toInt(),getValue(cmd,',',4).toInt());
       FastLED.show();
     }
     else
     {
       // Decrement and Pass it on
-      //Serial.printf("%d%s:",atoi(device_num) - 1  + Serial.readStringUntil(":")));
+      cmd[0]--;
+      Serial.print(cmd);
     }
   }
 }
