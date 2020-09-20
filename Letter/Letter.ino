@@ -30,22 +30,6 @@ String getValue(String data, char separator, int index)
 
   return found>index ? data.substring(strIndex[0], strIndex[1]) : "";
 }
-void SetColor(String incoming) //incoming looks like this -> Q:0x00FF00
-{
-  String colorString = incoming.substring(2); // remove Q:
-  long color = strtol(colorString.c_str(), NULL, 16);
-
-  leds[0] = color;
-  leds[15] = color;
-}
-
-char* string2char(String command){
-    if(command.length()!=0){
-        char *p = const_cast<char*>(command.c_str());
-        return p;
-    }
-    
-}
 
 void loop()
 {
