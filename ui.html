@@ -74,6 +74,7 @@
         </p>
         <button type='button' id='clear'>Clear Points</button>
     </div>
+    <iframe src="https://giphy.com/embed/la3211WGwbYYw" width="480" height="309" frameBorder="0" class="giphy-embed" allowFullScreen></iframe><p><a href="https://giphy.com/gifs/colorful-la3211WGwbYYw">via GIPHY</a></p>
     <video id='video' src='https://upload.wikimedia.org/wikipedia/commons/7/79/Big_Buck_Bunny_small.ogv'
         controls='false' crossorigin='anonymous'></video>
 
@@ -100,41 +101,39 @@
                 control_points = { 0: [[0, 0]], 1: [[0, 0]], 2: [[0, 0]], 3: [[0, 0]], 4: [[0, 0]], 5: [[0, 0]], 6: [[0, 0]], 7: [[0, 0]], 8: [[0, 0]], 9: [[0, 0]] },
                 point_history = { 0: [[0, 0, 0]], 1: [[0, 0, 0]], 2: [[0, 0, 0]], 3: [[0, 0, 0]], 4: [[0, 0, 0]], 5: [[0, 0, 0]], 6: [[0, 0, 0]], 7: [[0, 0, 0]], 8: [[0, 0, 0]], 9: [[0, 0, 0]] };
 
-            var video = document.getElementById('video');
+         
             // Setup initial text borders 
             words_ctx.lineWidth = 3;
             words_ctx.strokeStyle = 'black';
             words_ctx.font = ' 150px Arial';
             words_ctx.strokeText('MakerSPACe', 0, 250);
-            // Sizing for control Points 
-            words_ctx.lineWidth = 2;
-            words_ctx.shadowBlur = 1;
-
+            
+            var video = document.getElementById('video');
             video.addEventListener('play', function () {
                 var $this = this; //cache
                 (function loop() {
                     if (!$this.paused && !$this.ended) {
+                        //Resize Video
                         var hRatio = (canvas.width / video.videoWidth) * video.videoHeight;
-                        //console.log($this[0]);
                         paint_ctx.drawImage($this, 0, 0, canvas.width, hRatio);
                         setTimeout(loop, 1000 / 30); // drawing at 30fps
                     }
                 })();
             });
             //Generate Arduino Requests
-            var connection = new WebSocket('ws://' + w.location.hostname + ':81/', ['arduino']);
-            connection.onopen = function () {
-            connection.send('Connect ' + new Date());
-            };
-            connection.onerror = function (error) {
-            console.log('WebSocket Error ', error);
-            };
-            connection.onmessage = function (e) {
-            console.log('Server: ', e.data);
-            };
-            connection.onclose = function () {
-            console.log('WebSocket connection closed');
-            };
+            // var connection = new WebSocket('ws://' + w.location.hostname + ':81/', ['arduino']);
+            // connection.onopen = function () {
+            // connection.send('Connect ' + new Date());
+            // };
+            // connection.onerror = function (error) {
+            // console.log('WebSocket Error ', error);
+            // };
+            // connection.onmessage = function (e) {
+            // console.log('Server: ', e.data);
+            // };
+            // connection.onclose = function () {
+            // console.log('WebSocket connection closed');
+            // };
 
             function samplePoint(x, y) {
                 var img_data = paint_ctx.getImageData(x, y, 1, 1).data;
