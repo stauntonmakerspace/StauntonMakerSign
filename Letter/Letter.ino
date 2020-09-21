@@ -1,6 +1,6 @@
 #include <FastLED.h>
 #define NUM_LEDS 10
-#define DATA_PIN 12
+#define DATA_PIN 3
 CRGB leds[NUM_LEDS];
 #define BRIGHTNESS 180
 
@@ -11,8 +11,6 @@ void setup()
   FastLED.setBrightness(BRIGHTNESS);
   Serial.begin(9600);
 }
-
-String cmd;
 
 int parseIntFast(int numberOfDigits)
 {
@@ -51,7 +49,8 @@ void loop()
         Serial.print("#");
         Serial.print(device_num - 1);
         for (int i = 0; i < 12; i++){
-          Serial.print(Serial.read())
+          Serial.write(Serial.read());
+          delay(5);
         }
       }
     }
