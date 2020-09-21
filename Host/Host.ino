@@ -318,11 +318,11 @@ void loop()
 
 void webSocketEvent(byte num, WStype_t type, uint8_t * payload, size_t length)
 {
-  int data[5];// device_num, led_num, r, g, b
+  
   if(type == WStype_TEXT)
   {
-          Serial.print((char *)payload + ":"); 
-      
+        Serial.print('#');
+        Serial.print((char *)payload); 
   }
   else 
   {

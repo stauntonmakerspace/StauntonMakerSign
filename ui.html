@@ -74,9 +74,11 @@
         </p>
         <button type='button' id='clear'>Clear Points</button>
     </div>
-    <iframe src="https://giphy.com/embed/la3211WGwbYYw" width="480" height="309" frameBorder="0" class="giphy-embed" allowFullScreen></iframe><p><a href="https://giphy.com/gifs/colorful-la3211WGwbYYw">via GIPHY</a></p>
-    <video id='video' src='https://upload.wikimedia.org/wikipedia/commons/7/79/Big_Buck_Bunny_small.ogv'
-        controls='false' crossorigin='anonymous'></video>
+    <video width="250" id='video' src='https://upload.wikimedia.org/wikipedia/commons/e/e1/Example_of_a_glitch_art_video.ogv'
+    controls='false' crossorigin='anonymous'></video>
+
+    <iframe src="https://giphy.com/embed/la3211WGwbYYw" width="480" height="309" frameBorder="0" class="giphy-embed"
+        allowFullScreen></iframe>
 
     <script>
         // Main Function 
@@ -92,22 +94,19 @@
                 record = d.querySelector('#record'),
                 body = d.querySelector('body'),
                 offset = 1000,
-                lineWidth = 10,
-                shadowBlur = 10,
                 points = [],
                 bufer = paint_ctx.getImageData(0, 0, canvas.width, canvas.height),
                 radio_selection = 'Paint',
                 led_counts = { 0: 10, 1: 10, 2: 10, 3: 10, 4: 10, 5: 10, 6: 10, 7: 10, 8: 10, 9: 10 },
                 control_points = { 0: [[0, 0]], 1: [[0, 0]], 2: [[0, 0]], 3: [[0, 0]], 4: [[0, 0]], 5: [[0, 0]], 6: [[0, 0]], 7: [[0, 0]], 8: [[0, 0]], 9: [[0, 0]] },
-                point_history = { 0: [[0, 0, 0]], 1: [[0, 0, 0]], 2: [[0, 0, 0]], 3: [[0, 0, 0]], 4: [[0, 0, 0]], 5: [[0, 0, 0]], 6: [[0, 0, 0]], 7: [[0, 0, 0]], 8: [[0, 0, 0]], 9: [[0, 0, 0]] };
+                point_history = {};
 
-         
             // Setup initial text borders 
             words_ctx.lineWidth = 3;
             words_ctx.strokeStyle = 'black';
             words_ctx.font = ' 150px Arial';
             words_ctx.strokeText('MakerSPACe', 0, 250);
-            
+
             var video = document.getElementById('video');
             video.addEventListener('play', function () {
                 var $this = this; //cache
@@ -123,16 +122,16 @@
             //Generate Arduino Requests
             // var connection = new WebSocket('ws://' + w.location.hostname + ':81/', ['arduino']);
             // connection.onopen = function () {
-            // connection.send('Connect ' + new Date());
+            //     connection.send('Connect ' + new Date());
             // };
             // connection.onerror = function (error) {
-            // console.log('WebSocket Error ', error);
+            //     console.log('WebSocket Error ', error);
             // };
             // connection.onmessage = function (e) {
-            // console.log('Server: ', e.data);
+            //     console.log('Server: ', e.data);
             // };
             // connection.onclose = function () {
-            // console.log('WebSocket connection closed');
+            //     console.log('WebSocket connection closed');
             // };
 
             function samplePoint(x, y) {
@@ -146,10 +145,16 @@
                 for (const [device_num, points] of Object.entries(control_points)) {
                     for (const [index, point] of Object.entries(points)) {
                         var rgb = samplePoint(point[0], point[1]);
-                        var cmd = device_num.toString() + ',' + index.toString() + ',' + rgb[0].toString() + ',' + rgb[1].toString() + ',' + rgb[2].toString();
-                        if (point_history[index] === cmd) { }
-                        //connection.send(cmd); 
-                        console.log(cmd);
+                        var led_ind = device_num.toString().padStart(3, "0") + index.toString().padStart(3, "0");
+                        var cmd = rgb[0].toString().padStart(3, "0") + rgb[1].toString().padStart(3, "0") + rgb[2].toString().padStart(3, "0");
+                        if (point_history[led_ind] != cmd) {
+                            if (false){// connection.readyState === WebSocket.OPEN) {
+                                // connection.send(led_ind+cmd);
+                            } else {
+                                console.log(led_ind+cmd);
+                            }
+                            point_history[led_ind] = cmd;
+                        }
                     }
                 }
             }
@@ -159,9 +164,9 @@
             }
             function resetCanvas() {
                 paint_ctx.clearRect(0, 0, canvas.width, canvas.height);
-                paint_ctx.lineWidth = lineWidth;
+                paint_ctx.lineWidth = 10;
                 paint_ctx.shadowColor = '#000000';
-                paint_ctx.shadowBlur = shadowBlur;
+                paint_ctx.shadowBlur = 10;
                 paint_ctx.shadowOffsetX = -offset;
                 bufer = paint_ctx.getImageData(0, 0, canvas.width, canvas.height);
             }
@@ -181,7 +186,7 @@
                     }
                 }
                 sampleCapturePoints();
-                setTimeout(runCanvas, 1000 / 60); // drawing at *0fps
+                setTimeout(runCanvas, 1000 / 24); // drawing at 24fps
             }
             d.getElementById('reset').onclick = resetCanvas;
             body.addEventListener('mouseup', function () {

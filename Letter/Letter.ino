@@ -13,40 +13,47 @@ void setup()
 }
 
 String cmd;
-// https://stackoverflow.com/questions/9072320/split-string-into-string-array
-String getValue(String data, char separator, int index)
+
+int parseIntFast(int numberOfDigits)
 {
-  int found = 0;
-  int strIndex[] = {0, -1};
-  int maxIndex = data.length()-1;
-
-  for(int i=0; i<=maxIndex && found<=index; i++){
-    if(data.charAt(i)==separator || i==maxIndex){
-        found++;
-        strIndex[0] = strIndex[1]+1;
-        strIndex[1] = (i == maxIndex) ? i+1 : i;
-    }
-  }
-
-  return found>index ? data.substring(strIndex[0], strIndex[1]) : "";
+  /*
+  This function returns the converted integral number as an int value.
+  If no valid conversion could be performed, it returns zero.*/
+  char theNumberString[numberOfDigits + 1];
+  int theNumber;
+  for (int i = 0; i < numberOfDigits; theNumberString[i++] = Serial.read())
+  {
+    delay(5);
+  };
+  theNumberString[numberOfDigits] = 0x00;
+  theNumber = atoi(theNumberString);
+  return theNumber;
 }
 
 void loop()
 {
   while (Serial.available() > 0)
   {
-    cmd = Serial.readStringUntil(';');
-    if (cmd[0] == '0')
+    if (Serial.read() == '#')
     {
-      
-      leds[getValue(cmd,',',1).toInt()].setRGB(getValue(cmd,',',2).toInt(),getValue(cmd,',',3).toInt(),getValue(cmd,',',4).toInt());
-      FastLED.show();
-    }
-    else
-    {
-      // Decrement and Pass it on
-      cmd[0]--;
-      Serial.print(cmd);
+      int device_num = parseIntFast(1);
+      if (device_num == 0)
+      {
+        int led_num = parseIntFast(3);
+        int r = parseIntFast(3);
+        int g = parseIntFast(3);
+        int b = parseIntFast(3);
+        leds[led_num].setRGB(r, g, b);
+        FastLED.show();
+      }
+      else
+      {
+        Serial.print("#");
+        Serial.print(device_num - 1);
+        for (int i = 0; i < 12; i++){
+          Serial.print(Serial.read())
+        }
+      }
     }
   }
 }
