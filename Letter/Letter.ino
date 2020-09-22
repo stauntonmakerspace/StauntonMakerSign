@@ -51,7 +51,8 @@ void loop()
         Serial.print("#");
         Serial.print(device_num - 1);
         for (int i = 0; i < 12; i++){
-          Serial.print(Serial.read())
+          Serial.print(Serial.read());
+          delay(5);
         }
       }
     }

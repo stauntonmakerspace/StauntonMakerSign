@@ -75,8 +75,11 @@ String html_1 = R"=====(
         </p>
         <button type='button' id='clear'>Clear Points</button>
     </div>
-    <video id='video' src='https://upload.wikimedia.org/wikipedia/commons/7/79/Big_Buck_Bunny_small.ogv'
-        controls='false' crossorigin='anonymous'></video>
+    <video width="250" id='video' src='https://upload.wikimedia.org/wikipedia/commons/e/e1/Example_of_a_glitch_art_video.ogv'
+    controls='false' crossorigin='anonymous'></video>
+
+    <iframe src="https://giphy.com/embed/la3211WGwbYYw" width="480" height="309" frameBorder="0" class="giphy-embed"
+        allowFullScreen></iframe>
 
     <script>
         // Main Function 
@@ -92,49 +95,44 @@ String html_1 = R"=====(
                 record = d.querySelector('#record'),
                 body = d.querySelector('body'),
                 offset = 1000,
-                lineWidth = 10,
-                shadowBlur = 10,
                 points = [],
                 bufer = paint_ctx.getImageData(0, 0, canvas.width, canvas.height),
                 radio_selection = 'Paint',
-                led_counts = { 0: 10, 1: 10, 2: 10, 3: 10, 4: 10, 5: 10, 6: 10, 7: 10, 8: 10, 9: 10 },
+                led_counts = { 0: 151, 1: 57, 2: 10, 3: 10, 4: 10, 5: 10, 6: 10, 7: 10, 8: 10, 9: 10 },
                 control_points = { 0: [[0, 0]], 1: [[0, 0]], 2: [[0, 0]], 3: [[0, 0]], 4: [[0, 0]], 5: [[0, 0]], 6: [[0, 0]], 7: [[0, 0]], 8: [[0, 0]], 9: [[0, 0]] },
-                point_history = { 0: [[0, 0, 0]], 1: [[0, 0, 0]], 2: [[0, 0, 0]], 3: [[0, 0, 0]], 4: [[0, 0, 0]], 5: [[0, 0, 0]], 6: [[0, 0, 0]], 7: [[0, 0, 0]], 8: [[0, 0, 0]], 9: [[0, 0, 0]] };
+                point_history = {};
 
-            var video = document.getElementById('video');
             // Setup initial text borders 
             words_ctx.lineWidth = 3;
             words_ctx.strokeStyle = 'black';
             words_ctx.font = ' 150px Arial';
             words_ctx.strokeText('MakerSPACe', 0, 250);
-            // Sizing for control Points 
-            words_ctx.lineWidth = 2;
-            words_ctx.shadowBlur = 1;
 
+            var video = document.getElementById('video');
             video.addEventListener('play', function () {
                 var $this = this; //cache
                 (function loop() {
                     if (!$this.paused && !$this.ended) {
+                        //Resize Video
                         var hRatio = (canvas.width / video.videoWidth) * video.videoHeight;
-                        //console.log($this[0]);
                         paint_ctx.drawImage($this, 0, 0, canvas.width, hRatio);
                         setTimeout(loop, 1000 / 30); // drawing at 30fps
                     }
                 })();
             });
-            //Generate Arduino Requests
+            // Generate Arduino Requests
             var connection = new WebSocket('ws://' + w.location.hostname + ':81/', ['arduino']);
             connection.onopen = function () {
-            connection.send('Connect ' + new Date());
+                connection.send('Connect ' + new Date());
             };
             connection.onerror = function (error) {
-            console.log('WebSocket Error ', error);
+                console.log('WebSocket Error ', error);
             };
             connection.onmessage = function (e) {
-            console.log('Server: ', e.data);
+                console.log('Server: ', e.data);
             };
             connection.onclose = function () {
-            console.log('WebSocket connection closed');
+                console.log('WebSocket connection closed');
             };
 
             function samplePoint(x, y) {
@@ -148,12 +146,15 @@ String html_1 = R"=====(
                 for (const [device_num, points] of Object.entries(control_points)) {
                     for (const [index, point] of Object.entries(points)) {
                         var rgb = samplePoint(point[0], point[1]);
-                        var cmd = device_num.toString() + ',' + index.toString() + ',' + rgb[0].toString() + ',' + rgb[1].toString() + ',' + rgb[2].toString();
-                        if (point_history[index] === cmd) { }
-                        if (connection.readyState === WebSocket.OPEN) {
-                          connection.send(cmd); 
-                        }else{
-                        console.log(cmd);
+                        var led_ind = device_num.toString() + index.toString().padStart(3, "0");
+                        var cmd = rgb[0].toString().padStart(3, "0") + rgb[1].toString().padStart(3, "0") + rgb[2].toString().padStart(3, "0");
+                        if (point_history[led_ind] != cmd) {
+                            if (connection.readyState === WebSocket.OPEN) {
+                                connection.send(led_ind+cmd);
+                            } else {
+                                console.log(led_ind+cmd);
+                            }
+                            point_history[led_ind] = cmd;
                         }
                     }
                 }
@@ -164,9 +165,9 @@ String html_1 = R"=====(
             }
             function resetCanvas() {
                 paint_ctx.clearRect(0, 0, canvas.width, canvas.height);
-                paint_ctx.lineWidth = lineWidth;
+                paint_ctx.lineWidth = 15;
                 paint_ctx.shadowColor = '#000000';
-                paint_ctx.shadowBlur = shadowBlur;
+                paint_ctx.shadowBlur = 20;
                 paint_ctx.shadowOffsetX = -offset;
                 bufer = paint_ctx.getImageData(0, 0, canvas.width, canvas.height);
             }
@@ -186,7 +187,7 @@ String html_1 = R"=====(
                     }
                 }
                 sampleCapturePoints();
-                setTimeout(runCanvas, 1000 / 60); // drawing at *0fps
+                setTimeout(runCanvas, 1000 / 24); // drawing at 24fps
             }
             d.getElementById('reset').onclick = resetCanvas;
             body.addEventListener('mouseup', function () {
@@ -211,7 +212,7 @@ String html_1 = R"=====(
                         points.push([e.pageX, e.pageY]);
                     } else {
                         if (points.length < led_counts[radio_selection]) {
-                            if (Math.sqrt((e.pageX - points[points.length - 1][0]) ** 2 + (e.pageY - points[points.length - 1][1]) ** 2) > 5) {
+                            if (Math.sqrt((e.pageX - points[points.length - 1][0]) ** 2 + (e.pageY - points[points.length - 1][1]) ** 2) > 2.3) {
                                 points.push([e.pageX, e.pageY]);
                             }
                         }
@@ -267,7 +268,7 @@ char pass[] = "hackstaunton";
 void webSocketEvent(byte num, WStype_t type, uint8_t * payload, size_t length);
 void setup()
 {
-  Serial.begin(115200);
+  Serial.begin(9600);
   Serial.println();
   Serial.println("Serial started at 115200");
   Serial.println();

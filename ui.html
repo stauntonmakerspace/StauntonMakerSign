@@ -119,20 +119,20 @@
                     }
                 })();
             });
-            //Generate Arduino Requests
-            // var connection = new WebSocket('ws://' + w.location.hostname + ':81/', ['arduino']);
-            // connection.onopen = function () {
-            //     connection.send('Connect ' + new Date());
-            // };
-            // connection.onerror = function (error) {
-            //     console.log('WebSocket Error ', error);
-            // };
-            // connection.onmessage = function (e) {
-            //     console.log('Server: ', e.data);
-            // };
-            // connection.onclose = function () {
-            //     console.log('WebSocket connection closed');
-            // };
+            // Generate Arduino Requests
+            var connection = new WebSocket('ws://' + w.location.hostname + ':81/', ['arduino']);
+            connection.onopen = function () {
+                connection.send('Connect ' + new Date());
+            };
+            connection.onerror = function (error) {
+                console.log('WebSocket Error ', error);
+            };
+            connection.onmessage = function (e) {
+                console.log('Server: ', e.data);
+            };
+            connection.onclose = function () {
+                console.log('WebSocket connection closed');
+            };
 
             function samplePoint(x, y) {
                 var img_data = paint_ctx.getImageData(x, y, 1, 1).data;
@@ -145,11 +145,11 @@
                 for (const [device_num, points] of Object.entries(control_points)) {
                     for (const [index, point] of Object.entries(points)) {
                         var rgb = samplePoint(point[0], point[1]);
-                        var led_ind = device_num.toString().padStart(3, "0") + index.toString().padStart(3, "0");
+                        var led_ind = device_num.toString() + index.toString().padStart(3, "0");
                         var cmd = rgb[0].toString().padStart(3, "0") + rgb[1].toString().padStart(3, "0") + rgb[2].toString().padStart(3, "0");
                         if (point_history[led_ind] != cmd) {
-                            if (false){// connection.readyState === WebSocket.OPEN) {
-                                // connection.send(led_ind+cmd);
+                            if (connection.readyState === WebSocket.OPEN) {
+                                connection.send(led_ind+cmd);
                             } else {
                                 console.log(led_ind+cmd);
                             }
