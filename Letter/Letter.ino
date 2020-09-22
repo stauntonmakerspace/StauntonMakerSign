@@ -10,7 +10,6 @@ int led_num;
 int r;
 int g;
 int b;
-
 void setup()
 {
   FastLED.addLeds<WS2812B, DATA_PIN, GRB>(leds, NUM_LEDS);
@@ -53,7 +52,7 @@ void loop()
       }
       else
       {
-        Serial.print("#");
+        Serial.print('#');
         Serial.print(device_num - 1);
         for (int i = 0; i < 12; i++)
         {
