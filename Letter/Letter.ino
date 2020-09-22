@@ -3,6 +3,13 @@
 #define DATA_PIN 3
 CRGB leds[NUM_LEDS];
 #define BRIGHTNESS 180
+#define FRAME_RATE 15
+unsigned long last_update;
+int device_num;
+int led_num;
+int r;
+int g;
+int b;
 
 void setup()
 {
@@ -10,6 +17,7 @@ void setup()
   pinMode(DATA_PIN, OUTPUT);
   FastLED.setBrightness(BRIGHTNESS);
   Serial.begin(9600);
+  last_update = millis();
 }
 
 int parseIntFast(int numberOfDigits)
@@ -34,25 +42,30 @@ void loop()
   {
     if (Serial.read() == '#')
     {
-      int device_num = parseIntFast(1);
+      device_num = parseIntFast(1);
       if (device_num == 0)
       {
-        int led_num = parseIntFast(3);
-        int r = parseIntFast(3);
-        int g = parseIntFast(3);
-        int b = parseIntFast(3);
+        led_num = parseIntFast(3);
+        r = parseIntFast(3);
+        g = parseIntFast(3);
+        b = parseIntFast(3);
         leds[led_num].setRGB(r, g, b);
-        FastLED.show();
       }
       else
       {
         Serial.print("#");
         Serial.print(device_num - 1);
-        for (int i = 0; i < 12; i++){
+        for (int i = 0; i < 12; i++)
+        {
           Serial.print(Serial.read());
           delay(5);
         }
       }
     }
+  }
+  if ((millis() - last_update) > 1000 / FRAME_RATE)
+  {
+    FastLED.show();
+    last_update = millis();
   }
 }
