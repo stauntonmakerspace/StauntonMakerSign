@@ -57,17 +57,17 @@ String html_1 = R"=====(
                 <th>e</th>
             </tr>
             <tr>
-                <td><input type='radio' name='letter' checked='true' value='Paint'></td>
-                <td><input type='radio' name='letter' value=0></td>
-                <td><input type='radio' name='letter' value=1></td>
-                <td><input type='radio' name='letter' value=2></td>
-                <td><input type='radio' name='letter' value=3></td>
-                <td><input type='radio' name='letter' value=4></td>
-                <td><input type='radio' name='letter' value=5></td>
-                <td><input type='radio' name='letter' value=6></td>
-                <td><input type='radio' name='letter' value=7></td>
-                <td><input type='radio' name='letter' value=8></td>
-                <td><input type='radio' name='letter' value=9></td>
+                <td><input type='radio' id='button' name='letter' checked='true' value='Paint'></td>
+                <td><input type='radio' id='button' name='letter' value=0></td>
+                <td><input type='radio' id='button' name='letter' value=1></td>
+                <td><input type='radio' id='button' name='letter' value=2></td>
+                <td><input type='radio' id='button' name='letter' value=3></td>
+                <td><input type='radio' id='button' name='letter' value=4></td>
+                <td><input type='radio' id='button' name='letter' value=5></td>
+                <td><input type='radio' id='button' name='letter' value=6></td>
+                <td><input type='radio' id='button' name='letter' value=7></td>
+                <td><input type='radio' id='button' name='letter' value=8></td>
+                <td><input type='radio' id='button' name='letter' value=9></td>
             </tr>
         </table>
         <p>Points Remaining:

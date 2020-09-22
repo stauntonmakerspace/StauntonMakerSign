@@ -9,9 +9,26 @@
             margin: 0;
         }
 
-        .cnvs {
-            outline: #000000 1px solid;
+        canvas {
+            outline: #000000 4px solid;
         }
+
+        td {
+            background-color: #4c56af;
+            border: 1px;
+            color: black;
+            padding: 5px 5px;
+            text-decoration: none;
+            font-size: 16px;
+            }
+        th {
+            background-color: #4c56af; 
+            border: 1px;
+            color: black;
+            padding: 5px 5px;
+            text-decoration: none;
+            font-size: 16px;
+            }
     </style>
 
     <script src='https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js'></script>
@@ -56,17 +73,17 @@
                 <th>e</th>
             </tr>
             <tr>
-                <td><input type='radio' name='letter' checked='true' value='Paint'></td>
-                <td><input type='radio' name='letter' value=0></td>
-                <td><input type='radio' name='letter' value=1></td>
-                <td><input type='radio' name='letter' value=2></td>
-                <td><input type='radio' name='letter' value=3></td>
-                <td><input type='radio' name='letter' value=4></td>
-                <td><input type='radio' name='letter' value=5></td>
-                <td><input type='radio' name='letter' value=6></td>
-                <td><input type='radio' name='letter' value=7></td>
-                <td><input type='radio' name='letter' value=8></td>
-                <td><input type='radio' name='letter' value=9></td>
+                <td><input type='radio' id='button' name='letter' checked='true' value='Paint'></td>
+                <td><input type='radio' id='button' name='letter' value=0></td>
+                <td><input type='radio' id='button' name='letter' value=1></td>
+                <td><input type='radio' id='button' name='letter' value=2></td>
+                <td><input type='radio' id='button' name='letter' value=3></td>
+                <td><input type='radio' id='button' name='letter' value=4></td>
+                <td><input type='radio' id='button' name='letter' value=5></td>
+                <td><input type='radio' id='button' name='letter' value=6></td>
+                <td><input type='radio' id='button' name='letter' value=7></td>
+                <td><input type='radio' id='button' name='letter' value=8></td>
+                <td><input type='radio' id='button' name='letter' value=9></td>
             </tr>
         </table>
         <p>Points Remaining:
@@ -104,7 +121,7 @@
             // Setup initial text borders 
             words_ctx.lineWidth = 3;
             words_ctx.strokeStyle = 'black';
-            words_ctx.font = ' 150px Arial';
+            words_ctx.font = ' 150px serif';
             words_ctx.strokeText('MakerSPACe', 0, 250);
 
             var video = document.getElementById('video');
@@ -119,20 +136,20 @@
                     }
                 })();
             });
-            // Generate Arduino Requests
-            var connection = new WebSocket('ws://' + w.location.hostname + ':81/', ['arduino']);
-            connection.onopen = function () {
-                connection.send('Connect ' + new Date());
-            };
-            connection.onerror = function (error) {
-                console.log('WebSocket Error ', error);
-            };
-            connection.onmessage = function (e) {
-                console.log('Server: ', e.data);
-            };
-            connection.onclose = function () {
-                console.log('WebSocket connection closed');
-            };
+            // // Generate Arduino Requests
+            // var connection = new WebSocket('ws://' + w.location.hostname + ':81/', ['arduino']);
+            // connection.onopen = function () {
+            //     connection.send('Connect ' + new Date());
+            // };
+            // connection.onerror = function (error) {
+            //     console.log('WebSocket Error ', error);
+            // };
+            // connection.onmessage = function (e) {
+            //     console.log('Server: ', e.data);
+            // };
+            // connection.onclose = function () {
+            //     console.log('WebSocket connection closed');
+            // };
 
             function samplePoint(x, y) {
                 var img_data = paint_ctx.getImageData(x, y, 1, 1).data;
@@ -148,11 +165,11 @@
                         var led_ind = device_num.toString() + index.toString().padStart(3, "0");
                         var cmd = rgb[0].toString().padStart(3, "0") + rgb[1].toString().padStart(3, "0") + rgb[2].toString().padStart(3, "0");
                         if (point_history[led_ind] != cmd) {
-                            if (connection.readyState === WebSocket.OPEN) {
-                                connection.send(led_ind+cmd);
-                            } else {
-                                console.log(led_ind+cmd);
-                            }
+                            // if (connection.readyState === WebSocket.OPEN) {
+                            //     connection.send(led_ind+cmd);
+                            // } else {
+                            //     console.log(led_ind+cmd);
+                            // }
                             point_history[led_ind] = cmd;
                         }
                     }
