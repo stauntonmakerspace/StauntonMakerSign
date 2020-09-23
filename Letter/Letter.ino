@@ -16,55 +16,37 @@ void setup()
   pinMode(DATA_PIN, OUTPUT);
   FastLED.setBrightness(BRIGHTNESS);
   Serial.begin(9600);
-  last_update = millis();
 }
 
-int parseIntFast(int numberOfDigits)
-{
-  /*
-  This function returns the converted integral number as an int value.
-  If no valid conversion could be performed, it returns zero.*/
-  char theNumberString[numberOfDigits + 1];
-  int theNumber;
-  for (int i = 0; i < numberOfDigits; theNumberString[i++] = Serial.read())
-  {
-    delay(5);
-  };
-  theNumberString[numberOfDigits] = 0x00;
-  theNumber = atoi(theNumberString);
-  return theNumber;
-}
-
+byte cmd_buffer[5];
 void loop()
 {
-  while (Serial.available() > 0)
+  // NOTE: Increase buffer size to 256 in HardwareSerial.h
+  if (Serial.available() >= 6) // Full Command is in buffer including start byte
   {
-    if (Serial.read() == '#')
+    if (Serial.read() == '#') // Check Start Byte
     {
-      device_num = parseIntFast(1);
-      if (device_num == 0)
+      for (int i = 0; i < 5; i++)
+      { // Read Command Array Bytes
+        cmd_buffer[i] = Serial.read();
+      }
+      if (cmd_buffer[0] == 0) // Command has zero hops remaining
       {
-        led_num = parseIntFast(3);
-        r = parseIntFast(3);
-        g = parseIntFast(3);
-        b = parseIntFast(3);
-        leds[led_num].setRGB(r, g, b);
+        if (cmd_buffer[1] < 0) // Check for screen refresh command
+        {
+          FastLED.show(); // Refresh led screen
+        }
+        else
+        {
+          leds[cmd_buffer[1]].setRGB(cmd_buffer[2], cmd_buffer[3], cmd_buffer[4]);
+        }
       }
       else
       {
         Serial.print('#');
-        Serial.print(device_num - 1);
-        for (int i = 0; i < 12; i++)
-        {
-          Serial.print(Serial.read());
-          delay(5);
-        }
+        cmd_buffer[0]--; // Decrement hops remaining
+        Serial.write(cmd_buffer, 5);
       }
     }
-  }
-  if ((millis() - last_update) > 1000 / FRAME_RATE)
-  {
-    FastLED.show();
-    last_update = millis();
   }
 }
