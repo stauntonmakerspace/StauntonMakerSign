@@ -32,9 +32,9 @@ void loop()
       }
       if (cmd_buffer[0] == 0) // Command has zero hops remaining
       {
-        if (cmd_buffer[1] < 0) // Check for screen refresh command
+        if (cmd_buffer[1] == 255) // Check for screen refresh command
         {
-          FastLED.show(); // Refresh led screen
+          FastLED.show(); // Refresh leds 
         }
         else
         {
@@ -43,7 +43,7 @@ void loop()
       }
       else
       {
-        Serial.print('#');
+        Serial.print('#'); // Send Start Byte 
         cmd_buffer[0]--; // Decrement hops remaining
         Serial.write(cmd_buffer, 5);
       }
