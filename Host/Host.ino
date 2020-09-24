@@ -121,6 +121,7 @@ String html_1 = R"=====(
                 })();
             });
             // Generate Arduino Requests
+            const buffer = new ArrayBuffer(5);
             var connection = new WebSocket('ws://' + w.location.hostname + ':81/', ['arduino']);
             connection.onopen = function () {
                 connection.send('Connect ' + new Date());
@@ -128,6 +129,7 @@ String html_1 = R"=====(
             connection.onerror = function (error) {
                 console.log('WebSocket Error ', error);
             };
+            connection.binaryType = 'arraybuffer';
             connection.onmessage = function (e) {
                 console.log('Server: ', e.data);
             };
@@ -148,11 +150,18 @@ String html_1 = R"=====(
                         var rgb = samplePoint(point[0], point[1]);
                         var led_ind = device_num.toString() + index.toString().padStart(3, "0");
                         var cmd = rgb[0].toString().padStart(3, "0") + rgb[1].toString().padStart(3, "0") + rgb[2].toString().padStart(3, "0");
+                        var bytearray = new Uint8Array( buffer );
+                        bytearray[0] = device_num;
+                        bytearray[1] = index;
+                        bytearray[2] = rgb[0];
+                        bytearray[3] = rgb[1];
+                        bytearray[4] = rgb[2];
+                            
                         if (point_history[led_ind] != cmd) {
                             if (connection.readyState === WebSocket.OPEN) {
-                                connection.send(led_ind+cmd);
+                                connection.send( bytearray.buffer );
                             } else {
-                                console.log(led_ind+cmd);
+                                console.log("Bop");
                             }
                             point_history[led_ind] = cmd;
                         }
@@ -165,9 +174,9 @@ String html_1 = R"=====(
             }
             function resetCanvas() {
                 paint_ctx.clearRect(0, 0, canvas.width, canvas.height);
-                paint_ctx.lineWidth = 15;
+                paint_ctx.lineWidth = 50;
                 paint_ctx.shadowColor = '#000000';
-                paint_ctx.shadowBlur = 20;
+                paint_ctx.shadowBlur = 100;
                 paint_ctx.shadowOffsetX = -offset;
                 bufer = paint_ctx.getImageData(0, 0, canvas.width, canvas.height);
             }
@@ -252,85 +261,75 @@ String html_1 = R"=====(
 
 </html>
 )=====";
- 
+
 #include <ESP8266WiFi.h>
 #include <WebSocketsServer.h>
- 
+
 WiFiServer server(80);
 WebSocketsServer webSocket = WebSocketsServer(81);
- 
+
 String header = "HTTP/1.1 200 OK\r\nAccess-Control-Allow-Origin: *\r\nContent-Type: text/html\r\n\r\n";
- 
- 
+
+
 char ssid[] = "StauntonMakerspace";  // use your own network ssid and password
 char pass[] = "hackstaunton";
 
 void webSocketEvent(byte num, WStype_t type, uint8_t * payload, size_t length);
 void setup()
 {
-  Serial.begin(9600);
+  Serial.begin(115200);
   Serial.println();
   Serial.println("Serial started at 115200");
   Serial.println();
- 
+
   // Connect to a WiFi network
   Serial.print(F("Connecting to "));  Serial.println(ssid);
   WiFi.begin(ssid,pass);
- 
+
   // connection with timeout
   int count = 0; 
   while ( (WiFi.status() != WL_CONNECTED) && count < 17) 
   {
       Serial.print(".");  delay(500);  count++;
   }
- 
+
   if (WiFi.status() != WL_CONNECTED)
   { 
      Serial.println("");  Serial.print("Failed to connect to ");  Serial.println(ssid);
      while(1);
   }
- 
+
   Serial.println("");
   Serial.println(F("[CONNECTED]"));   Serial.print("[IP ");  Serial.print(WiFi.localIP()); 
   Serial.println("]");
- 
+
   // start a server
   server.begin();
   Serial.println("Server started");
- 
+
   webSocket.begin();
   webSocket.onEvent(webSocketEvent);
 }
- 
+
 void loop()
 {
     webSocket.loop();
- 
+
     WiFiClient client = server.available();     // Check if a client has connected
     if (!client)  {  return;  }
- 
+
     client.flush();
     client.print( header );
     client.print( html_1 ); 
     Serial.println("New page served");
- 
+
     delay(5);
 }
 
 void webSocketEvent(byte num, WStype_t type, uint8_t * payload, size_t length)
 {
-  
-  if(type == WStype_TEXT)
-  {
-        Serial.print('#');
-        Serial.print((char *)payload); 
-  }
-  else 
-  {
-    Serial.print("WStype = ");   Serial.println(type);  
-    Serial.print("WS payload = ");
-    for(int i = 0; i < length; i++) { Serial.print((char) payload[i]); }
-    Serial.println();
- 
-  }
+  if(type == WStype_BIN) {
+    Serial.print('#');
+      Serial.write(payload,5);
+    }
 }
