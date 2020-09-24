@@ -1,27 +1,37 @@
 #include <FastLED.h>
 #define NUM_LEDS 84
 
+#define TX_BUFFER_SIZE 32 // * 5 bytes
+unsigned int cmds_buffered = 0;
+
+#define READY2RECIEVE 8
+#define READY2SEND 8
 #define DATA_PIN 3
+
 CRGB leds[NUM_LEDS];
 #define BRIGHTNESS 180
-#define FRAME_RATE 15
-unsigned long last_update;
-int device_num;
-int led_num;
-int r;
-int g;
-int b;
+
 void setup()
 {
   FastLED.addLeds<WS2812B, DATA_PIN, GRB>(leds, NUM_LEDS);
+
   pinMode(DATA_PIN, OUTPUT);
+  pinMode(READY2SEND, INPUT);
+  pinMode(READY2RECIEVE, OUTPUT);
+
   FastLED.setBrightness(BRIGHTNESS);
   Serial.begin(115200);
 }
 
+byte waiting_cmd_buffer[TX_BUFFER_SIZE][5]
 byte cmd_buffer[5];
 void loop()
 {
+  // Empty Buffered Commands
+  while (cmds_buffered > 0) {
+    Serial.print('#');
+    Serial.write(waiting_cmd_buffer[--cmds_buffered], 5);
+  }
   // NOTE: Increase buffer size to 256 in HardwareSerial.h
   if (Serial.available() >= 6) // Full Command is in buffer including start byte
   {
@@ -35,7 +45,9 @@ void loop()
       {
         if (cmd_buffer[1] == 255) // Check for screen refresh command
         {
-          FastLED.show(); // Refresh leds 
+          digitalWrite(READY2RECIEVE, LOW);
+          FastLED.show(); // Refresh leds
+          digitalWrite(READY2RECIEVE, HIGH);
         }
         else
         {
@@ -44,9 +56,13 @@ void loop()
       }
       else
       {
-        Serial.print('#'); // Send Start Byte 
-        cmd_buffer[0]--; // Decrement hops remaining
-        Serial.write(cmd_buffer, 5);
+        if (digitalRead(READY2SEND) == HIGH) {
+          Serial.print('#'); // Send Start Byte
+          cmd_buffer[0]--; // Decrement hops remaining
+          Serial.write(cmd_buffer, 5);
+        } else {
+          waiting_cmd_buffer[cmds_buffered++] = cmd_buffer;
+        }
       }
     }
   }
