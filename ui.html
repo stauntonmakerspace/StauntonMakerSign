@@ -9,26 +9,9 @@
             margin: 0;
         }
 
-        canvas {
-            outline: #000000 4px solid;
+        .cnvs {
+            outline: #000000 1px solid;
         }
-
-        td {
-            background-color: #4c56af;
-            border: 1px;
-            color: black;
-            padding: 5px 5px;
-            text-decoration: none;
-            font-size: 16px;
-            }
-        th {
-            background-color: #4c56af; 
-            border: 1px;
-            color: black;
-            padding: 5px 5px;
-            text-decoration: none;
-            font-size: 16px;
-            }
     </style>
 
     <script src='https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js'></script>
@@ -91,12 +74,6 @@
         </p>
         <button type='button' id='clear'>Clear Points</button>
     </div>
-    <video width="250" id='video' src='https://upload.wikimedia.org/wikipedia/commons/e/e1/Example_of_a_glitch_art_video.ogv'
-    controls='false' crossorigin='anonymous'></video>
-
-    <iframe src="https://giphy.com/embed/la3211WGwbYYw" width="480" height="309" frameBorder="0" class="giphy-embed"
-        allowFullScreen></iframe>
-
     <script>
         // Main Function 
         (function (w, d) {
@@ -114,42 +91,32 @@
                 points = [],
                 bufer = paint_ctx.getImageData(0, 0, canvas.width, canvas.height),
                 radio_selection = 'Paint',
-                led_counts = { 0: 10, 1: 10, 2: 10, 3: 10, 4: 10, 5: 10, 6: 10, 7: 10, 8: 10, 9: 10 },
+                led_counts = { 0: 151, 1: 57, 2: 10, 3: 10, 4: 10, 5: 10, 6: 10, 7: 10, 8: 10, 9: 10 },
                 control_points = { 0: [[0, 0]], 1: [[0, 0]], 2: [[0, 0]], 3: [[0, 0]], 4: [[0, 0]], 5: [[0, 0]], 6: [[0, 0]], 7: [[0, 0]], 8: [[0, 0]], 9: [[0, 0]] },
                 point_history = {};
 
             // Setup initial text borders 
             words_ctx.lineWidth = 3;
             words_ctx.strokeStyle = 'black';
-            words_ctx.font = ' 150px serif';
+            words_ctx.font = ' 150px Arial';
             words_ctx.strokeText('MakerSPACe', 0, 250);
 
-            var video = document.getElementById('video');
-            video.addEventListener('play', function () {
-                var $this = this; //cache
-                (function loop() {
-                    if (!$this.paused && !$this.ended) {
-                        //Resize Video
-                        var hRatio = (canvas.width / video.videoWidth) * video.videoHeight;
-                        paint_ctx.drawImage($this, 0, 0, canvas.width, hRatio);
-                        setTimeout(loop, 1000 / 30); // drawing at 30fps
-                    }
-                })();
-            });
-            // // Generate Arduino Requests
-            // var connection = new WebSocket('ws://' + w.location.hostname + ':81/', ['arduino']);
-            // connection.onopen = function () {
-            //     connection.send('Connect ' + new Date());
-            // };
-            // connection.onerror = function (error) {
-            //     console.log('WebSocket Error ', error);
-            // };
-            // connection.onmessage = function (e) {
-            //     console.log('Server: ', e.data);
-            // };
-            // connection.onclose = function () {
-            //     console.log('WebSocket connection closed');
-            // };
+            // Arduino Command Tools 
+            const buffer = new ArrayBuffer(5);
+            var connection = new WebSocket('ws://' + w.location.hostname + ':81/', ['arduino']);
+            connection.onopen = function () {
+                connection.send('Connect ' + new Date());
+            };
+            connection.onerror = function (error) {
+                console.log('WebSocket Error ', error);
+            };
+            connection.binaryType = 'arraybuffer';
+            connection.onmessage = function (e) {
+                console.log('Server: ', e.data);
+            };
+            connection.onclose = function () {
+                console.log('WebSocket connection closed');
+            };
 
             function samplePoint(x, y) {
                 var img_data = paint_ctx.getImageData(x, y, 1, 1).data;
@@ -164,26 +131,35 @@
                         var rgb = samplePoint(point[0], point[1]);
                         var led_ind = device_num.toString() + index.toString().padStart(3, "0");
                         var cmd = rgb[0].toString().padStart(3, "0") + rgb[1].toString().padStart(3, "0") + rgb[2].toString().padStart(3, "0");
+                        var bytearray = new Uint8Array(buffer);
+                        bytearray[0] = device_num;
+                        bytearray[1] = index;
+                        bytearray[2] = rgb[0];
+                        bytearray[3] = rgb[1];
+                        bytearray[4] = rgb[2];
+
                         if (point_history[led_ind] != cmd) {
-                            // if (connection.readyState === WebSocket.OPEN) {
-                            //     connection.send(led_ind+cmd);
-                            // } else {
-                            //     console.log(led_ind+cmd);
-                            // }
+                            if (connection.readyState === WebSocket.OPEN) {
+                                connection.send(bytearray.buffer);
+                            } else {
+                                console.log(bytearray);
+                            }
                             point_history[led_ind] = cmd;
                         }
                     }
                 }
             }
+
             function setCapturePoints() {
                 control_points[radio_selection] = points;
                 points = [];
             }
+            // Paint Tools 
             function resetCanvas() {
                 paint_ctx.clearRect(0, 0, canvas.width, canvas.height);
-                paint_ctx.lineWidth = 10;
+                paint_ctx.lineWidth = 50;
                 paint_ctx.shadowColor = '#000000';
-                paint_ctx.shadowBlur = 10;
+                paint_ctx.shadowBlur = 100;
                 paint_ctx.shadowOffsetX = -offset;
                 bufer = paint_ctx.getImageData(0, 0, canvas.width, canvas.height);
             }
@@ -228,7 +204,7 @@
                         points.push([e.pageX, e.pageY]);
                     } else {
                         if (points.length < led_counts[radio_selection]) {
-                            if (Math.sqrt((e.pageX - points[points.length - 1][0]) ** 2 + (e.pageY - points[points.length - 1][1]) ** 2) > 5) {
+                            if (Math.sqrt((e.pageX - points[points.length - 1][0]) ** 2 + (e.pageY - points[points.length - 1][1]) ** 2) > 2.3) {
                                 points.push([e.pageX, e.pageY]);
                             }
                         }
@@ -257,7 +233,26 @@
             color.addEventListener('change', function (e) {
                 paint_ctx.shadowColor = e.target.value;
             });
+            var paint_ctx = document.querySelector("canvas").getContext("2d"),
+                angle = Math.random() * 360,                                 // start angle (for HSL)
+                angleDlt = 60,                                               // 60° ahead
+                step = 1;                                                    // "speed" for change
 
+            function createGradient() {
+                var gr = paint_ctx.createLinearGradient(0, 0, 500, 0);               // create gradient
+                gr.addColorStop(0, "hsl(" + (angle % 360) + ",100%, 50%)");    // start color
+                gr.addColorStop(0.5, "hsl(" + ((angle + (angleDlt / 2)) % 360) + ",100%, 50%)");
+                gr.addColorStop(1, "hsl(" + ((angle + angleDlt) % 360) + ",100%, 50%)");
+                paint_ctx.fillStyle = gr;                                            // set as fill style
+                paint_ctx.fillRect(0, 0, canvas.width, canvas.height);                                  // fill area
+            }
+
+            // demo loop
+            (function anim() {
+                createGradient();
+                angle += step;                                               // increase angles
+                requestAnimationFrame(anim)
+            })();
             resetCanvas();
             runCanvas();
         }(window, document));
