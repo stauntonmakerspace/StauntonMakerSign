@@ -7,11 +7,12 @@ void setup()
 }
 
 #define FRAME_RATE 30
-int cnts[4] = {151, 57, 84, 43};
+#define DEVICE_CNT 4
+int cnts[DEVICE_CNT] = {151, 57, 84, 43};
 void loop()
 {
   // put your main code here, to run repeatedly:
-  for (int j = 3; j >= 0; j--)
+  for (int j = DEVICE_CNT - 1; j >= 0; j--)
   {
     cmd_buffer[1] = j;
     for (int i = 0; i < cnts[j]; i++)
