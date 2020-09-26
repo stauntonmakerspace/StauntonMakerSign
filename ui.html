@@ -117,8 +117,8 @@
             // Setup initial text borders 
             words_ctx.lineWidth = 3;
             words_ctx.strokeStyle = 'black';
-            words_ctx.font = ' 150px serif';
-            words_ctx.strokeText('MakerSPACe', (canvas.width / 2) - (canvas.width / 4) , canvas.height / 2);
+            words_ctx.font = ' 250px serif';
+            words_ctx.strokeText('MakerSPACe', 0, canvas.height / 2);
 
             // Arduino Command Tools 
             const buffer = new ArrayBuffer(5);
@@ -256,7 +256,7 @@
                 var radius = 25 + 500 * Math.abs(Math.cos(angle));
                 paint_ctx.shadowBlur = 1;
                 paint_ctx.shadowOffsetX = 0;
-                paint_ctx.arc(canvas.width / 2, canvas.height / 2, radius, 0, Math.PI * 2, false);
+                paint_ctx.arc(canvas.width / 3, canvas.height / 2, radius, 0, Math.PI * 2, false);
                 paint_ctx.closePath();
 
                 // color in the circle
