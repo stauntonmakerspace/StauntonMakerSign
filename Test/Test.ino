@@ -3,10 +3,10 @@ byte reset_buffer[6] = {'#', 0, 255, 255, 0, 0};
 void setup()
 {
   // put your setup code here, to run once:
-  Serial.begin(115200);
+  Serial.begin(500000);
 }
 
-#define FRAME_RATE 30
+#define FRAME_RATE 100
 #define DEVICE_CNT 4
 int cnts[DEVICE_CNT] = {151, 57, 84, 43};
 void loop()
@@ -19,7 +19,8 @@ void loop()
     {
       cmd_buffer[2] = i;
       Serial.write(cmd_buffer, 6);
-    }
+    }}
+      for (int j = DEVICE_CNT - 1; j >= 0; j--){
     reset_buffer[1] = j;
     Serial.write(reset_buffer, 6);
   }
