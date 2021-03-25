@@ -27,8 +27,9 @@ led_cnts = [[10, 20],# M
 ser = None # serial.Serial('/dev/ttyACM0', 500000, serial.EIGHTBITS, serial.PARITY_NONE, serial.STOPBITS_ONE)
 sign = LedSign(led_cnts, ser)
 sign.adjustable = True
-rect = pygame.rect.Rect(100, 50, 50, 50)
-v = [2, 2]
+
+rect = pygame.rect.Rect(0, 0, 640, 100)
+v = [0, 4]
 while running:
     events = pygame.event.get()
     running = not any([event.type == pygame.QUIT for event in events])

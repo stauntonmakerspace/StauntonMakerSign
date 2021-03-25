@@ -41,7 +41,7 @@ class LedSymbol():
         for length in strip_lengths:
             self.strips.append(LedStrip(length))
 
-    def update_with(self, screen):
+    def update(self, screen, events):
         rgb_cmds = []
         for strip in self.strips:
             rgb_cmds += strip.sample_screen(screen)
@@ -134,7 +134,7 @@ class LedSign():
                             self.symbols[self.active_control[0]].strips[self.active_control[1]].set_endpoint(point)
 
         for i in range(len(self.symbols) - 1, -1, -1):
-            cmds = self.symbols[i].update_with(screen)
+            cmds = self.symbols[i].update(screen, events)
             led_num = 0
             changed = False
             for cmd in cmds:
