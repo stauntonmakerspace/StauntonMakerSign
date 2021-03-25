@@ -2,7 +2,7 @@ from sign_code import LedSign
 import serial
 import pygame
 
-FPS = 30
+FPS = 20
 pygame.init()
 
 screen = pygame.display.set_mode((640, 480))
@@ -12,8 +12,8 @@ clock = pygame.time.Clock()
 
 running = True
 
-led_cnts = [[10, 20],# M
-            [4, 20], # a
+led_cnts = [[10, 20,10,20],# M
+            [4, 20, 20], # a
             [5, 20], # k
             [10, 20],# e
             [6, 20], # r
@@ -24,11 +24,12 @@ led_cnts = [[10, 20],# M
             [10, 20],# e
           ]
 
-ser = None # serial.Serial('/dev/ttyACM0', 500000, serial.EIGHTBITS, serial.PARITY_NONE, serial.STOPBITS_ONE)
+ser = serial.Serial('/dev/cu.usbserial-1430', 500000)
 sign = LedSign(led_cnts, ser)
 sign.adjustable = True
+sign.showing = True
 
-rect = pygame.rect.Rect(0, 0, 640, 100)
+rect = pygame.rect.Rect(0, 0, 640, 300)
 v = [0, 4]
 while running:
     events = pygame.event.get()

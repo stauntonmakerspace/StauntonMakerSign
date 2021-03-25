@@ -98,8 +98,7 @@ class LedSign():
 
     def __send_cmd(self, device_num, led_num, R, G, B):
         values = [ord('#'), device_num, led_num, R, G, B]
-        print(values)
-        #self.ser.write(bytearray(values))
+        self.ser.write(bytearray(values))
 
     def update(self, screen, events):
         """ cmd_bytearray
