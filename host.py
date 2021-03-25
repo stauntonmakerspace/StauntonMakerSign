@@ -12,16 +12,16 @@ clock = pygame.time.Clock()
 
 running = True
 
-led_cnts = [[10, 20],
-            [4, 20],
-            [5, 20],
-            [10, 20],
-            [6, 20],
-            [10, 20],
-            [10, 20],
-            [10, 20],
-            [10, 20],
-            [10, 20],
+led_cnts = [[10, 20],# M
+            [4, 20], # a
+            [5, 20], # k
+            [10, 20],# e
+            [6, 20], # r
+            [10, 20],# S
+            [10, 20],# p
+            [10, 20],# a
+            [10, 20],# c
+            [10, 20],# e
           ]
 
 ser = None # serial.Serial('/dev/ttyACM0', 500000, serial.EIGHTBITS, serial.PARITY_NONE, serial.STOPBITS_ONE)
@@ -45,10 +45,9 @@ while running:
         v[1] *= -1
    
     screen.fill((0, 0, 0))
-    pygame.draw.rect(screen, (255,0,0), rect)
+    pygame.draw.rect(screen, (255,0,255), rect)
 
     sign.update(screen, events)
-    sign.draw(screen)
     pygame.display.flip()
     # - constant game speed / FPS -
     clock.tick(FPS)
