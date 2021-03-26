@@ -1,44 +1,44 @@
-from sign_code import LedSign
+from led_sign import LedSign
 import serial
 import pygame
 
 FPS = 20
 pygame.init()
 
-screen = pygame.display.set_mode((640, 480))
+screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+width, height = pygame.display.get_surface().get_size()
 pygame.display.set_caption("MakerSign Drawing System")
 
 clock = pygame.time.Clock()
 
 running = True
-# led_counts = { 0: 151, 1: 57, 2: 10, 3: 10, 4: 10, 5: 10, 6: 10, 7: 10, 8: 10, 9: 10 },
-led_cnts = [[10, 10],# M 
-            [10, 10], # a
-            [10, 10], # k
-            [10, 10],# e
-            [10, 10], # r
-            [10, 10],# S
-            [10, 10],# p
-            [10, 10],# a
-            [10, 10],# c
-            [10, 10],# e
-          ]
 try:
     ser = serial.Serial('/dev/cu.usbserial-1420', 500000)
 except:
     class SerialMock():
         def __init__(self):
-            pass
+            print("WARNING: Running with mock serial. No commands will actually be sent to connected devices")
         def write(self, bytes):
             pass
     ser = SerialMock()
-sign = LedSign(led_cnts, ser)
+
+sign = LedSign(
+    [[10, 10, 10],# M 
+    [10, 10, 10], # a
+    [10, 10, 10], # k
+    [10, 10, 10],# e
+    [10, 10, 10], # r
+    [10, 10, 10],# S
+    [10, 10, 10],# p
+    [10, 10, 10],# a
+    [10, 10, 10],# c
+    [10, 10, 10]]# e
+    , ser)
 
 sign.adjustable = True
-sign.showing = True
 
-rect = pygame.rect.Rect(0, 0, 640, 300)
-v = [0, 4]
+rect = pygame.rect.Rect(0, 0, width//5, height)
+v = [30, 0]
 while running:
     events = pygame.event.get()
     running = not any([event.type == pygame.QUIT for event in events])
@@ -47,17 +47,19 @@ while running:
 
     if rect.left < 0:
         v[0] *= -1
-    if rect.right > 640:
+    if rect.right > width:
         v[0] *= -1
     if rect.top < 0:
         v[1] *= -1
-    if rect.bottom > 480:
+    if rect.bottom > height:
         v[1] *= -1
    
     screen.fill((0, 0, 0))
     pygame.draw.rect(screen, (255,0,255), rect)
 
     sign.update(screen, events)
+    sign.draw(screen)
+
     pygame.display.flip()
     # - constant game speed / FPS -
     clock.tick(FPS)

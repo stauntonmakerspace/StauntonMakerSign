@@ -5,30 +5,42 @@ import pickle
 
 class LedStrip():
     def __init__(self, led_cnt):
-        self.startpoint = pygame.math.Vector2(led_cnt, led_cnt)
-        self.endpoint = pygame.math.Vector2(led_cnt * 10, led_cnt * 10)
+        self.start_control = pygame.math.Vector2(led_cnt, led_cnt)
+        self.end_control = pygame.math.Vector2(led_cnt * 10, led_cnt * 10)
         self.initialized = False
         self.start_set = False
         self.led_cnt = led_cnt
         # Store the last record values in order to prevent sending duplicates unnecessrily
         self.last_samples = [(0, 0, 0), ] * led_cnt
-        self.scale = 1
+        self.scale = 5
 
-    def set_endpoint(self, endpoint):
-        self.endpoint = self.startpoint - \
-            ((self.startpoint - endpoint).normalize() * self.led_cnt * self.scale)
+    def setup(self, vector):
+        if not self.start_set:
+            self.start_control = vector
+            self.start_set = True
+        else:
+            self.set_end_control(vector)
+            self.initialized = True
 
-    def set_startpoint(self, startpoint):
-        self.startpoint = self.endpoint - \
-            ((self.endpoint - startpoint).normalize() * self.led_cnt * self.scale)
+    def draw(self, screen):
+        pygame.draw.line(screen, (255, 0, 0),
+                         self.start_control, self.end_control, 6)
+
+    def set_end_control(self, end_control):
+        self.end_control = self.start_control - \
+            ((self.start_control - end_control).normalize() * self.led_cnt * self.scale)
+
+    def set_start_control(self, start_control):
+        self.start_control = self.end_control - \
+            ((self.end_control - start_control).normalize() * self.led_cnt * self.scale)
 
     def sample_screen(self, screen):
         unit_vector = (
-            (self.startpoint - self.endpoint).normalize() * self.scale)
+            (self.start_control - self.end_control).normalize() * self.scale)
         samples = []
         for i in range(self.led_cnt):
-            sample_point = self.startpoint - (unit_vector * i)
-            # pygame.draw.circle(screen, (0,255,0), (sample_point.x, sample_point.y+1), 1)
+            sample_point = self.start_control - (unit_vector * i)
+            # pygame.draw.circle(screen, (0,255,0), (sample_point.x, sample_point.y), 1)
             try:
                 sample = screen.get_at(
                     (int(sample_point.x), int(sample_point.y)))[:-1]  # Remove A from RGBA
@@ -41,35 +53,27 @@ class LedStrip():
                 samples.append(sample)
         return samples
 
-    def setup(self, vector):
-        if not self.start_set:
-            self.startpoint = vector
-
-            self.start_set = True
-        else:
-            self.set_endpoint(vector)
-            self.initialized = True
-
-    def draw(self, screen):
-        pygame.draw.line(screen, (255, 0, 0),
-                         self.startpoint, self.endpoint, 6)
-
-
 class LedSymbol():
     def __init__(self, strip_lengths):
+        self.initialized = False
         self.strips = []
         for length in strip_lengths:
             self.strips.append(LedStrip(length))
-        self.initialized = False
-
+        
     def setup(self, vector):
         strip = next(filter(lambda x: x.initialized ==
                             False, self.strips), None)
         if strip != None:
             strip.setup(vector)
         else:
-            # all([strip.initialized for strip in self.strips])
             self.initialized = True
+
+    def draw(self, screen):
+        for strip_num in range(len(self.strips) - 1):
+            self.strips[strip_num].draw(screen)
+            pygame.draw.line(
+                screen, (0, 0, 255), self.strips[strip_num].end_control, self.strips[strip_num + 1].start_control, 1)
+        self.strips[-1].draw(screen)
 
     def update(self, screen, events):
         rgb_cmds = []
@@ -77,23 +81,16 @@ class LedSymbol():
             rgb_cmds += strip.sample_screen(screen)
         return rgb_cmds
 
-    def draw(self, screen):
-        for strip_num in range(len(self.strips) - 1):
-            self.strips[strip_num].draw(screen)
-            pygame.draw.line(
-                screen, (0, 0, 255), self.strips[strip_num].endpoint, self.strips[strip_num + 1].startpoint, 1)
-        self.strips[-1].draw(screen)
-
-    # (dist: float, strip number: int, Is start point: bool)
     def closest_control(self, vector):
+        # (dist: float, strip number: int, Is start point: bool)
         closest = 10e10
         out = None
         for i, strip in enumerate(self.strips):
-            d1 = strip.startpoint.distance_to(vector)
+            d1 = strip.start_control.distance_to(vector)
             if d1 < closest:
                 closest = d1
                 out = (d1, i, 1)
-            d2 = strip.endpoint.distance_to(vector)
+            d2 = strip.end_control.distance_to(vector)
             if d2 < closest:
                 closest = d2
                 out = (d2, i, 0)
@@ -111,7 +108,6 @@ class LedSign():
         self.initialized = False
 
         self.adjustable = True
-        self.showing = True
 
     def setup(self, vector):
         symbol = next(filter(lambda x: x.initialized ==
@@ -121,33 +117,9 @@ class LedSign():
         else:
             self.initialized = True
 
-    # (symbol number: int, strip number: int, Is start point: bool)
-    def closest_control(self, vector):
-        closest = 10e10
-        out = None
-        for i, symbol in enumerate(self.symbols):
-            best = symbol.closest_control(vector)
-            if best != None:
-                dist, strip, is_start = best
-                if dist < closest and dist < 40:
-                    out = (i, strip, is_start)
-        return out
-
     def draw(self, screen):
         for symbol in self.symbols:
             symbol.draw(screen)
-
-    def __send_cmd(self, device_num, led_num, R, G, B):
-        """ cmd_bytearray
-        0: Singifies the start of a cmd
-        1: How many more times should the cmd be echod before it is executed.py
-        2: Which LED should the color values be assigned to. Set to 255 in order to display all set colors
-        3: Red color values 0 - 255
-        4: Green color values 0 - 255
-        6: Blue color values 0 - 255
-        """
-        values = [ord('#'), device_num, led_num, R, G, B]
-        self.ser.write(bytearray(values))
 
     def update(self, screen, events):
         if self.adjustable:
@@ -170,10 +142,10 @@ class LedSign():
                         mouse_x, mouse_y = event.pos
                         point = pygame.math.Vector2(mouse_x, mouse_y)
                         if self.active_control[2] == 1:
-                            self.symbols[self.active_control[0]].strips[self.active_control[1]].set_startpoint(
+                            self.symbols[self.active_control[0]].strips[self.active_control[1]].set_start_control(
                                 point)
                         else:
-                            self.symbols[self.active_control[0]].strips[self.active_control[1]].set_endpoint(
+                            self.symbols[self.active_control[0]].strips[self.active_control[1]].set_end_control(
                                 point)
 
         for i in range(len(self.symbols) - 1, -1, -1):
@@ -183,9 +155,31 @@ class LedSign():
             for cmd in cmds:
                 if cmd[0] != -1:
                     changed = True
-                    self.__send_cmd(i, led_num, cmd[0], cmd[1], cmd[2])
+                    self.send_cmd(i, led_num, cmd[0], cmd[1], cmd[2])
                 led_num += 1
             if changed:
-                self.__send_cmd(i, 255, 0, 0, 0)
-        if self.showing:
-            self.draw(screen)
+                self.send_cmd(i, 255, 0, 0, 0)
+    
+    def closest_control(self, vector):
+        # (symbol number: int, strip number: int, Is start point: bool)
+        closest = 10e10
+        out = None
+        for i, symbol in enumerate(self.symbols):
+            best = symbol.closest_control(vector)
+            if best != None:
+                dist, strip, is_start = best
+                if dist < closest and dist < 40:
+                    out = (i, strip, is_start)
+        return out
+
+    def send_cmd(self, device_num, led_num, R, G, B):
+        """ cmd_bytearray
+        0: Singifies the start of a cmd
+        1: How many more times should the cmd be echod before it is executed.py
+        2: Which LED should the color values be assigned to. Set to 255 in order to display all set colors
+        3: Red color values 0 - 255
+        4: Green color values 0 - 255
+        6: Blue color values 0 - 255
+        """
+        values = [ord('#'), device_num, led_num, R, G, B]
+        self.ser.write(bytearray(values))
