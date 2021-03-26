@@ -6,9 +6,9 @@ void setup()
   Serial.begin(500000);
 }
 
-#define FRAME_RATE 100
-#define DEVICE_CNT 4
-int cnts[DEVICE_CNT] = {151, 57, 84, 43};
+#define FRAME_RATE 5
+#define DEVICE_CNT 10
+int cnts[DEVICE_CNT] = {20, 20, 20, 20, 20, 20, 20, 20, 20, 20};
 void loop()
 {
   // put your main code here, to run repeatedly:

@@ -11,21 +11,29 @@ pygame.display.set_caption("MakerSign Drawing System")
 clock = pygame.time.Clock()
 
 running = True
-
-led_cnts = [[10, 20,10,20],# M
-            [4, 20, 20], # a
-            [5, 20], # k
-            [10, 20],# e
-            [6, 20], # r
-            [10, 20],# S
-            [10, 20],# p
-            [10, 20],# a
-            [10, 20],# c
-            [10, 20],# e
+# led_counts = { 0: 151, 1: 57, 2: 10, 3: 10, 4: 10, 5: 10, 6: 10, 7: 10, 8: 10, 9: 10 },
+led_cnts = [[10, 10],# M 
+            [10, 10], # a
+            [10, 10], # k
+            [10, 10],# e
+            [10, 10], # r
+            [10, 10],# S
+            [10, 10],# p
+            [10, 10],# a
+            [10, 10],# c
+            [10, 10],# e
           ]
-
-ser = serial.Serial('/dev/cu.usbserial-1430', 500000)
+try:
+    ser = serial.Serial('/dev/cu.usbserial-1420', 500000)
+except:
+    class SerialMock():
+        def __init__(self):
+            pass
+        def write(self, bytes):
+            pass
+    ser = SerialMock()
 sign = LedSign(led_cnts, ser)
+
 sign.adjustable = True
 sign.showing = True
 
