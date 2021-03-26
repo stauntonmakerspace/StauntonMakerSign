@@ -5,14 +5,17 @@ import pickle
 
 class LedStrip():
     def __init__(self, led_cnt):
-        self.start_control = pygame.math.Vector2(led_cnt, led_cnt)
-        self.end_control = pygame.math.Vector2(led_cnt * 10, led_cnt * 10)
         self.initialized = False
         self.start_set = False
         self.led_cnt = led_cnt
+        self.adjusting = False
         # Store the last record values in order to prevent sending duplicates unnecessrily
         self.last_samples = [(0, 0, 0), ] * led_cnt
         self.scale = 5
+
+        self.start_control = pygame.math.Vector2(led_cnt, led_cnt)
+        self.end_control = pygame.math.Vector2(
+            led_cnt * self.scale, led_cnt * self.scale)
 
     def setup(self, vector):
         if not self.start_set:
@@ -25,16 +28,36 @@ class LedStrip():
     def draw(self, screen):
         pygame.draw.line(screen, (255, 0, 0),
                          self.start_control, self.end_control, 6)
+        pygame.draw.circle(screen, (0, 255, 255),
+                           (self.start_control.x,  self.start_control.y), 4)
+        pygame.draw.circle(screen, (0, 255, 255),
+                           (self.end_control.x,  self.end_control.y), 4)
 
-    def set_end_control(self, end_control):
-        self.end_control = self.start_control - \
-            ((self.start_control - end_control).normalize() * self.led_cnt * self.scale)
+    def adjust_controls(self, screen, events):
+        return False
+        # for event in events:
+        #     if event.type == pygame.MOUSEBUTTONDOWN:
+        #         if event.button == 1:
+        #             mouse_x, mouse_y = event.pos
+        #             point = pygame.math.Vector2(mouse_x, mouse_y)
+        #             self.active_control = self.closest_control(point)
 
-    def set_start_control(self, start_control):
-        self.start_control = self.end_control - \
-            ((self.end_control - start_control).normalize() * self.led_cnt * self.scale)
+        #     elif event.type == pygame.MOUSEBUTTONUP:
+        #         if event.button == 1:
+        #             self.active_control = None
 
-    def sample_screen(self, screen):
+        #     elif event.type == pygame.MOUSEMOTION:
+        #         if self.active_control != None:
+        #             mouse_x, mouse_y = event.pos
+        #             point = pygame.math.Vector2(mouse_x, mouse_y)
+        #             if self.active_control[2] == 1:
+        #                 self.symbols[self.active_control[0]].strips[self.active_control[1]].set_start_control(
+        #                     point)
+        #             else:
+        #                 self.symbols[self.active_control[0]].strips[self.active_control[1]].set_end_control(
+        #                     point)
+
+    def update(self, screen, events):
         unit_vector = (
             (self.start_control - self.end_control).normalize() * self.scale)
         samples = []
@@ -53,13 +76,29 @@ class LedStrip():
                 samples.append(sample)
         return samples
 
+        def save(self):
+            pass
+
+    def save(self):
+        return (self.start_control, self.end_control, self.led_cnt)
+    def set_end_control(self, end_control):
+        self.end_control = self.start_control - \
+            ((self.start_control - end_control).normalize()
+             * self.led_cnt * self.scale)
+
+    def set_start_control(self, start_control):
+        self.start_control = self.end_control - \
+            ((self.end_control - start_control).normalize()
+             * self.led_cnt * self.scale)
+
+
 class LedSymbol():
     def __init__(self, strip_lengths):
         self.initialized = False
         self.strips = []
         for length in strip_lengths:
             self.strips.append(LedStrip(length))
-        
+
     def setup(self, vector):
         strip = next(filter(lambda x: x.initialized ==
                             False, self.strips), None)
@@ -74,12 +113,27 @@ class LedSymbol():
             pygame.draw.line(
                 screen, (0, 0, 255), self.strips[strip_num].end_control, self.strips[strip_num + 1].start_control, 1)
         self.strips[-1].draw(screen)
+        pygame.draw.circle(screen, (255, 255, 255),
+                           (self.strips[0].start_control.x - 15,  self.strips[0].start_control.y - 15), 4)
+
+    def adjust_controls(self, screen, events):
+        for strip in self.strips:
+            adjusted = strip.adjust_controls(screen, events)
+            if adjusted:
+                break
+        return False
 
     def update(self, screen, events):
         rgb_cmds = []
         for strip in self.strips:
-            rgb_cmds += strip.sample_screen(screen)
+            rgb_cmds += strip.update(screen, events)
         return rgb_cmds
+
+    def save(self):
+        cntrls = []
+        for strip in self.strips:
+            cntrls.append(strip.save())
+            
 
     def closest_control(self, vector):
         # (dist: float, strip number: int, Is start point: bool)
@@ -121,33 +175,40 @@ class LedSign():
         for symbol in self.symbols:
             symbol.draw(screen)
 
+    def adjust_controls(self, screen, events):
+        for event in events:
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    mouse_x, mouse_y = event.pos
+                    point = pygame.math.Vector2(mouse_x, mouse_y)
+                    if not self.initialized:
+                        self.setup(point)
+                    else:
+                        self.active_control = self.closest_control(point)
+
+            elif event.type == pygame.MOUSEBUTTONUP:
+                if event.button == 1:
+                    self.active_control = None
+
+            elif event.type == pygame.MOUSEMOTION:
+                if self.active_control != None:
+                    mouse_x, mouse_y = event.pos
+                    point = pygame.math.Vector2(mouse_x, mouse_y)
+                    if self.active_control[2] == 1:
+                        self.symbols[self.active_control[0]].strips[self.active_control[1]].set_start_control(
+                            point)
+                    else:
+                        self.symbols[self.active_control[0]].strips[self.active_control[1]].set_end_control(
+                            point)
+        return False
+
     def update(self, screen, events):
         if self.adjustable:
-            for event in events:
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    if event.button == 1:
-                        mouse_x, mouse_y = event.pos
-                        point = pygame.math.Vector2(mouse_x, mouse_y)
-                        if not self.initialized:
-                            self.setup(point)
-                        else:
-                            self.active_control = self.closest_control(point)
-
-                elif event.type == pygame.MOUSEBUTTONUP:
-                    if event.button == 1:
-                        self.active_control = None
-
-                elif event.type == pygame.MOUSEMOTION:
-                    if self.active_control != None:
-                        mouse_x, mouse_y = event.pos
-                        point = pygame.math.Vector2(mouse_x, mouse_y)
-                        if self.active_control[2] == 1:
-                            self.symbols[self.active_control[0]].strips[self.active_control[1]].set_start_control(
-                                point)
-                        else:
-                            self.symbols[self.active_control[0]].strips[self.active_control[1]].set_end_control(
-                                point)
-
+            if not self.adjust_controls(screen, events):
+                for symbol in self.symbols:
+                    adjusted = symbol.adjust_controls(screen, events)
+                    if adjusted:
+                        break
         for i in range(len(self.symbols) - 1, -1, -1):
             cmds = self.symbols[i].update(screen, events)
             led_num = 0
@@ -159,7 +220,11 @@ class LedSign():
                 led_num += 1
             if changed:
                 self.send_cmd(i, 255, 0, 0, 0)
-    
+
+    def save(self, filename):
+        for symbol in self.symbols:
+            symbol.save()
+
     def closest_control(self, vector):
         # (symbol number: int, strip number: int, Is start point: bool)
         closest = 10e10
