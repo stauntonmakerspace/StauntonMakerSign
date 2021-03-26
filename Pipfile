@@ -7,6 +7,8 @@ name = "pypi"
 pyserial = "*"
 serial = "*"
 pygame = "*"
+pykinect2 = "*"
+comtypes = "*"
 
 [dev-packages]
 
