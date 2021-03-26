@@ -1,8 +1,8 @@
-from led_sign import LedSign
+from led_sign import LedSign, SerialMock
 import serial
 import pygame
 
-FPS = 20
+FPS = 24
 pygame.init()
 
 screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
@@ -15,33 +15,35 @@ running = True
 try:
     ser = serial.Serial('/dev/cu.usbserial-1420', 500000)
 except:
-    class SerialMock():
-        def __init__(self):
-            print("WARNING: Running with mock serial. No commands will actually be sent to connected devices")
-        def write(self, bytes):
-            pass
     ser = SerialMock()
 
-sign = LedSign(
-    [[10, 10, 10],# M 
-    [10, 10, 10], # a
-    [10, 10, 10], # k
-    [10, 10, 10],# e
-    [10, 10, 10], # r
-    [10, 10, 10],# S
-    [10, 10, 10],# p
-    [10, 10, 10],# a
-    [10, 10, 10],# c
-    [10, 10, 10]]# e
-    , ser)
-
+# sign = LedSign(
+#     [[10, 10, 10],# M 
+#     [10, 10, 10], # a
+#     [10, 10, 10], # k
+#     [10, 10, 10],# e
+#     [10, 10, 10], # r
+#     [10, 10, 10],# S
+#     [10, 10, 10],# p
+#     [10, 10, 10],# a
+#     [10, 10, 10],# c
+#     [10, 10, 10]]# e
+#     , ser)
+# sign.save("sign.txt")
+sign = LedSign.load("sign.txt")
+sign.attach(ser)
 sign.adjustable = True
 
 rect = pygame.rect.Rect(0, 0, width//5, height)
-v = [30, 0]
+v = [20, 0]
 while running:
     events = pygame.event.get()
-    running = not any([event.type == pygame.QUIT for event in events])
+    for event in events:
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_DOWN:
+                sign.save("sign.txt")
+        if event.type == pygame.QUIT:
+            running = False
     
     rect.move_ip(v)
 

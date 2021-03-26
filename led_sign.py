@@ -3,6 +3,14 @@ import pygame
 import pickle
 
 
+class SerialMock():
+    def __init__(self):
+        print("WARNING: Running with mock serial. No commands will actually be sent to connected devices")
+
+    def write(self, bytes):
+        pass
+
+
 class LedStrip():
     def __init__(self, led_cnt):
         self.initialized = False
@@ -80,7 +88,8 @@ class LedStrip():
             pass
 
     def save(self):
-        return (self.start_control, self.end_control, self.led_cnt)
+        return (int(self.start_control.x),int(self.start_control.y), int(self.end_control.x),int(self.end_control.y), self.led_cnt)
+
     def set_end_control(self, end_control):
         self.end_control = self.start_control - \
             ((self.start_control - end_control).normalize()
@@ -133,7 +142,7 @@ class LedSymbol():
         cntrls = []
         for strip in self.strips:
             cntrls.append(strip.save())
-            
+        return cntrls
 
     def closest_control(self, vector):
         # (dist: float, strip number: int, Is start point: bool)
@@ -152,7 +161,7 @@ class LedSymbol():
 
 
 class LedSign():
-    def __init__(self, led_cnts, ser):
+    def __init__(self, led_cnts, ser=None):
         self.symbols = []
         for cnts in led_cnts:
             self.symbols.append(LedSymbol(cnts))
@@ -221,9 +230,37 @@ class LedSign():
             if changed:
                 self.send_cmd(i, 255, 0, 0, 0)
 
+    @staticmethod
+    def load(filename):
+        cntrl_vectors = []
+        led_cnts = []
+
+        # open file and read the content in a list
+        with open(filename, 'r') as filehandle:
+            for line in filehandle:
+                if "#" in line:
+                    led_cnts.append([])
+                else:
+                    x1,y1,x2,y2,led_cnt = line.split()
+                    led_cnts[-1].append(int(led_cnt))
+                    cntrl_vectors.append(pygame.math.Vector2(int(x1), int(y1)))
+                    cntrl_vectors.append(pygame.math.Vector2(int(x2), int(y2)))
+        temp = LedSign(led_cnts)
+        for vector in cntrl_vectors:
+            temp.setup(vector)
+
+        return temp
+
     def save(self, filename):
-        for symbol in self.symbols:
-            symbol.save()
+        with open(filename, 'w') as filehandle:
+            for symbol in self.symbols:
+                filehandle.write('#\n')
+                for strip in symbol.save():
+                    for cntrl in strip:
+                        filehandle.write('%s ' % cntrl)
+                    filehandle.write('\n')
+                    
+                
 
     def closest_control(self, vector):
         # (symbol number: int, strip number: int, Is start point: bool)
@@ -237,6 +274,9 @@ class LedSign():
                     out = (i, strip, is_start)
         return out
 
+    def attach(self, ser):
+        self.ser = ser
+
     def send_cmd(self, device_num, led_num, R, G, B):
         """ cmd_bytearray
         0: Singifies the start of a cmd
@@ -246,5 +286,9 @@ class LedSign():
         4: Green color values 0 - 255
         6: Blue color values 0 - 255
         """
+
         values = [ord('#'), device_num, led_num, R, G, B]
-        self.ser.write(bytearray(values))
+        if self.ser != None:
+            self.ser.write(bytearray(values))
+        else:
+            print("WARNING No serial object is attached")
