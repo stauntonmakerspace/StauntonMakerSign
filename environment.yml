@@ -18,6 +18,8 @@ dependencies:
     - future==0.18.2
     - iso8601==0.1.14
     - numpy==1.16.6
+    - opencv-contrib-python==4.2.0.32
+    - opencv-python==4.2.0.32
     - pygame==2.0.1
     - pykinect==2.1
     - pykinect2==0.1.0
