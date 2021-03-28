@@ -43,6 +43,7 @@ void loop()
         Serial.print('#'); // Send Start Byte
         cmd_buffer[0]--;   // Decrement hops remaining
         Serial.write(cmd_buffer, 5);
+        //delayMicroseconds(50);
       }
     }
   }
