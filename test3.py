@@ -5,7 +5,6 @@ import ctypes
 import pykinect
 from pykinect import nui
 from pykinect.nui import JointId
-
 import pygame
 from pygame.color import THECOLORS
 from pygame.locals import *
