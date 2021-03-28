@@ -8,11 +8,13 @@ DEPTH_WINSIZE = (320,240)
 FULL_WINSIZE = (-1,-1)
 screen_lock = thread.allocate()
 screen = None
+fg_frame = None
 
 tmp_s = pygame.Surface(DEPTH_WINSIZE, 0, 16)
 backSub = cv2.bgsegm.createBackgroundSubtractorGSOC()
 
 def depth_frame_ready(frame):
+    global fg_frame
     with screen_lock:
         frame.image.copy_bits(tmp_s._pixels_address)
         arr2d = (pygame.surfarray.pixels2d(tmp_s) >> 7) & 255
@@ -22,11 +24,7 @@ def depth_frame_ready(frame):
         fg = backSub.apply(backtorgb)
         fg = cv2.blur(fg, ksize)
         fg = cv2.resize(fg, FULL_WINSIZE[::-1]).astype("int32")
-
-        pygame.surfarray.blit_array(screen, fg)
-        pygame.display.update()
-
-
+        fg_frame = fg
 def main():
     """Initialize and run the game."""
     pygame.init()
@@ -34,6 +32,7 @@ def main():
     # Initialize PyGame
     global screen
     global FULL_WINSIZE
+    global fg_frame
 
     screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
     FULL_WINSIZE = pygame.display.get_surface().get_size()
@@ -43,6 +42,8 @@ def main():
     with nui.Runtime() as kinect:
         kinect.depth_frame_ready += depth_frame_ready   
         kinect.depth_stream.open(nui.ImageStreamType.Depth, 2, nui.ImageResolution.Resolution320x240, nui.ImageType.Depth)
+
+        sign = LedSign.load("sign.txt")
 
         # Main game loop
         running = True
@@ -55,6 +56,11 @@ def main():
                     if event.key == pygame.K_ESCAPE:
                         running = False
                         break
+            if type(fg_frame) != type(None):
+                pygame.surfarray.blit_array(screen, fg_frame)
+            sign.update(screen, events)
+            sign.draw(screen)
+            pygame.display.update()
 
 if __name__ == '__main__':
     main()
