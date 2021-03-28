@@ -8,7 +8,7 @@ void setup()
 
 #define FRAME_RATE 5
 #define DEVICE_CNT 10
-int cnts[DEVICE_CNT] = {20, 20, 20, 20, 20, 20, 20, 20, 20, 20};
+int cnts[DEVICE_CNT] = {40, 40, 40, 40, 40, 20, 40, 40, 40, 40};
 void loop()
 {
   // put your main code here, to run repeatedly:
@@ -19,6 +19,7 @@ void loop()
     {
       cmd_buffer[2] = i;
       Serial.write(cmd_buffer, 6);
+      delay(1);
     }}
       for (int j = DEVICE_CNT - 1; j >= 0; j--){
     reset_buffer[1] = j;

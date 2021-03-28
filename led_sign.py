@@ -109,8 +109,8 @@ class LedSymbol():
             self.strips.append(LedStrip(length))
 
     def setup(self, vector):
-        strip = next(filter(lambda x: x.initialized ==
-                            False, self.strips), None)
+        strip = next(iter(filter(lambda x: x.initialized ==
+                            False, self.strips)), None)
         if strip != None:
             strip.setup(vector)
         else:
@@ -173,8 +173,8 @@ class LedSign():
         self.adjustable = True
 
     def setup(self, vector):
-        symbol = next(filter(lambda x: x.initialized ==
-                             False, self.symbols), None)
+        symbol = next(iter(filter(lambda x: x.initialized ==
+                             False, self.symbols)), None)
         if symbol != None:
             symbol.setup(vector)
         else:
@@ -212,6 +212,10 @@ class LedSign():
         return False
 
     def update(self, screen, events):
+        for event in events:
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_DOWN:
+                    self.save("sign.txt")
         if self.adjustable:
             if not self.adjust_controls(screen, events):
                 for symbol in self.symbols:
