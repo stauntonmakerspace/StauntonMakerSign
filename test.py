@@ -5,7 +5,7 @@ from pykinect import nui
 from led_sign import LedSign, SerialMock
 # pip  install opencv-python==4.2.0.32
 DEPTH_WINSIZE = (320,240)
-
+FULL_WINSIZE = (-1,-1)
 screen_lock = thread.allocate()
 screen = None
 
@@ -18,7 +18,11 @@ def depth_frame_ready(frame):
         arr2d = (pygame.surfarray.pixels2d(tmp_s) >> 7) & 255
         arr2d = arr2d.astype('float32')
         backtorgb = cv2.cvtColor(arr2d,cv2.COLOR_GRAY2RGB)
-        fg = backSub.apply(backtorgb).astype("int32")
+        ksize = (5, 5)
+        fg = backSub.apply(backtorgb)
+        fg = cv2.blur(fg, ksize)
+        fg = cv2.resize(fg, FULL_WINSIZE[::-1]).astype("int32")
+
         pygame.surfarray.blit_array(screen, fg)
         pygame.display.update()
 
@@ -29,19 +33,28 @@ def main():
 
     # Initialize PyGame
     global screen
-    screen = pygame.display.set_mode(DEPTH_WINSIZE)
-    pygame.display.set_caption('PyKinect Depth Map Example')
+    global FULL_WINSIZE
+
+    screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+    FULL_WINSIZE = pygame.display.get_surface().get_size()
+
+    pygame.display.set_caption('PyKinect LED Sign Depth Code')
 
     with nui.Runtime() as kinect:
         kinect.depth_frame_ready += depth_frame_ready   
         kinect.depth_stream.open(nui.ImageStreamType.Depth, 2, nui.ImageResolution.Resolution320x240, nui.ImageType.Depth)
 
         # Main game loop
-        while True:
-            event = pygame.event.wait()
-
-            if event.type == pygame.QUIT:
-                break
+        running = True
+        while running:
+            events = pygame.event.get()
+            for event in events:
+                if event.type == pygame.QUIT:
+                    break
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        running = False
+                        break
 
 if __name__ == '__main__':
     main()
