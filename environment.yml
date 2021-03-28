@@ -14,10 +14,12 @@ dependencies:
   - wheel=0.36.2=pyhd3eb1b0_0
   - wincertstore=0.2=py27h87a2792_0
   - pip:
+    - easygui==0.98.2
     - future==0.18.2
     - iso8601==0.1.14
     - numpy==1.16.6
     - pygame==2.0.1
+    - pykinect==2.1
     - pykinect2==0.1.0
     - pyserial==3.5
     - pyyaml==5.4.1

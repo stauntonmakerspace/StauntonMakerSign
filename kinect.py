@@ -1,7 +1,5 @@
 import pygame
 from pygame.color import THECOLORS
-from pygame.locals import *
-import easygui
 
 import pykinect
 from pykinect import nui
@@ -11,13 +9,10 @@ from led_sign import LedSign, SerialMock
 
 import itertools
 
-DEPTH_WINSIZE = (320,240)
 VIDEO_WINSIZE = (640,480)
-
 
 screen = None
 dispInfo = None
-s=None
 
 SKELETON_COLORS = [THECOLORS["red"], 
                    THECOLORS["blue"], 
@@ -94,36 +89,46 @@ def post_frame(frame):
             pass
 
 def main():
+    global dispInfo
+    global screen
+    
     """Initialize and run the game"""
     pygame.init()
  
-    global dispInfo
+    screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+    clock = pygame.time.Clock()
 
-    # Initialize PyGame
-    global screen
-    screen = pygame.display.set_mode(VIDEO_WINSIZE, 0, 32)
-
-    pygame.display.set_caption("PyKinect Video Example")
+    pygame.display.set_caption("PyKinect LED Sign")
     
     sign = LedSign.load("sign.txt")
     frame_num = 0
+    skeletons = []
+    alive = True
     with nui.Runtime() as kinect:
         kinect.skeleton_frame_ready += post_frame
         kinect.skeleton_engine.enabled = True
         # Main game loop
-        while (True):
+        while (alive):
             frame_num += 1
             dispInfo = pygame.display.Info()
             events = pygame.event.get()
+            screen.fill(THECOLORS["black"])
             for event in events:
                 if (event.type == pygame.QUIT):
+                    alive = False
                     break
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        alive = False
+                        break
                 elif event.type == KINECTEVENT:
-                    skeletons = event.skeletons
-                    screen.fill(THECOLORS["black"])
+                    skeletons = event.skeletons if len(event.skeletons) != 0 else skeletons
                     draw_skeletons(skeletons)
+    
             sign.update(screen,events)
-            # sign.draw(screen)
+            if frame_num % 2 == 0 : pass
+            sign.draw(screen)
             pygame.display.flip()
+            clock.tick(24)
 if (__name__ == "__main__"):
     main()

@@ -13,7 +13,6 @@ clock = pygame.time.Clock()
 
 running = True
 
-
 # sign = LedSign(
 #     [[10, 10, 10],# M 
 #     [10, 10, 10], # a
