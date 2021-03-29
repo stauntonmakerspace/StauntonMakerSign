@@ -15,15 +15,15 @@ running = True
 
 sign = LedSign(
     [[10, 26, 10, 30, 27, 9, 26, 12],# M 
-#     [7, 3, 3, 3, 7, 10, 10, 10, 10, 10], # a
-#     [10, 10, 10,10,10,10,10], # k
-#     [10, 10, 10,10,10,10,10,10,10,10,10],# e
-#     [10, 10, 10], # r
-#     [10, 10, 10],# S
-#     [10, 10, 10],# p
-#     [10, 10, 10],# a
-#     [10, 10, 10],# c
-#     [10, 10, 10]# e
+    [7, 3, 3, 3, 7, 10, 10, 10, 10, 10], # a
+    [10, 10, 10,10,10,10,10], # k
+    [10, 10, 10,10,10,10,10,10,10,10,10],# e
+    [10, 10, 10], # r
+    [10, 10, 10],# S
+    [10, 10, 10],# p
+    [10, 10, 10],# a
+    [10, 10, 10],# c
+    [10, 10, 10]# e
     ])
 sign.save("sign.txt")
 sign = LedSign.load("sign.txt")
@@ -46,6 +46,10 @@ while running:
                 sign.save("sign.txt")
         if event.type == pygame.QUIT:
             running = False
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
+                running = False
+                break
     
     rect.move_ip(v)
 
