@@ -17,14 +17,14 @@ class LedStrip():
         self.scale = scale
 
         self.initialized = False 
+        self.start_control = None
+        self.end_control = None
+
         self.led_cnt = led_cnt
 
         # Store the last record values in order to prevent sending duplicates unnecessrily
         self.last_samples = [(0, 0, 0), ] * led_cnt
 
-        self.start_control = None
-        self.end_control = pygame.math.Vector2(0,0)
-    
     def setup(self, vector):
         if self.start_control == None:
             self.start_control = vector
@@ -82,18 +82,19 @@ class LedStrip():
                     samples.append(sample)
             return samples 
         else:
-            return []
+            return [(-1, -1, -1), ] * self.led_cnt
 
     def save(self):
         if self.initialized:
             return self.start_control, self.end_control, self.led_cnt
         else:
-            return pygame.math.Vector2(0,0), pygame.math.Vector2(10,10), self.led_cnt
+            return pygame.math.Vector2(0,0), pygame.math.Vector2(1,1), self.led_cnt
 
     def move_end_control(self, vector):
         self.end_control = self.start_control - \
             ((self.start_control - vector).normalize()
              * self.led_cnt * self.scale)
+        print(self.start_control, self.end_control)
 
     def move_start_control(self, vector):
         self.start_control = self.end_control - \
@@ -101,19 +102,19 @@ class LedStrip():
              * self.led_cnt * self.scale)
 
 class LedSymbol():
-    def __init__(self, strip_lengths):
-        self.initialized = False
+    def __init__(self, strip_lengths = None):
         self.strips = []
         for length in strip_lengths:
             self.strips.append(LedStrip(length))
+        self.initialized = False
 
     def setup(self, vector):
-        strip = next(iter(filter(lambda x: x.initialized ==
-                            False, self.strips)), None)
-        if strip != None:
-            strip.setup(vector)
-        else:
-            self.initialized = True
+        strip = None
+        for strip in self.strips:
+            if not strip.initialized:
+                strip.setup(vector)
+                break
+        self.initialized = all([strip.initialized for strip in self.strips])
 
     def draw(self, screen):
         if True: #self.initialized:
@@ -127,13 +128,15 @@ class LedSymbol():
                 pygame.draw.circle(screen, (255, 255, 255),
                                 (self.strips[0].start_control.x - 15,  self.strips[0].start_control.y - 15), 4)
             except:
+                print(1)
                 pass
     def adjust_controls(self, vector):
+        adjusted = False
         for strip in self.strips:
             adjusted = strip.adjust_controls(vector)
             if adjusted:
                 break
-        return False
+        return adjusted
 
     def update(self, screen_cap):
         rgb_cmds = []
@@ -176,15 +179,11 @@ class LedSign(): # ! Should handle all pygame screen/eventinteractions
 
     def setup(self, vector):
         symbol = None 
-        for sym in self.symbols:
-            if not sym.initialized:
-                symbol = sym
+        for symbol in self.symbols:
+            if not symbol.initialized:
+                symbol.setup(vector)
                 break
-
-        if symbol == None:
-            self.initialized = True
-        else:
-            symbol.setup(vector)
+        self.initialized = all([symbol.initialized for symbol in self.symbols])
 
     def draw(self, screen): # ! Move symbol draw code into here
         # * TODO Draw Drag Control 
@@ -259,8 +258,9 @@ class LedSign(): # ! Should handle all pygame screen/eventinteractions
                     cntrl_vectors.append(pygame.math.Vector2(int(x2), int(y2)))
         temp = LedSign(led_cnts)
         for vector in cntrl_vectors:
+            print(1,vector)
             temp.setup(vector)
-        temp.initialized = True
+        assert(temp.initialized == True)
         return temp
 
     def save(self, filename):
