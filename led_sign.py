@@ -22,7 +22,7 @@ class LedStrip():
         # Store the last record values in order to prevent sending duplicates unnecessrily
         self.last_samples = [(0, 0, 0), ] * led_cnt
 
-        self.start_control = pygame.math.Vector2(1,1) 
+        self.start_control = None
         self.end_control = pygame.math.Vector2(0,0)
     
     def setup(self, vector):
@@ -64,23 +64,25 @@ class LedStrip():
         return False
 
     def get_samples(self, screen_cap):
-        # if self.initialized:
-        unit_vector = (
-            (self.start_control).normalize() * self.scale)
-        samples = []
-        for i in range(self.led_cnt):
-            sample_point = self.start_control - (unit_vector * i)
-            try:
-                sample = screen_cap.get_at(
-                    (int(sample_point.x), int(sample_point.y)))[:-1]  # Remove A from RGBA
-            except:
-                sample = (-1, -1, -1)
-            if sample == self.last_samples[i]:
-                samples.append((-1, -1, -1))
-            else:
-                self.last_samples[i] = sample
-                samples.append(sample)
-        return samples 
+        if self.initialized:
+            unit_vector = (
+                (self.start_control - self.end_control).normalize() * self.scale)
+            samples = []
+            for i in range(self.led_cnt):
+                sample_point = self.start_control - (unit_vector * i)
+                try:
+                    sample = screen_cap.get_at(
+                        (int(sample_point.x), int(sample_point.y)))[:-1]  # Remove A from RGBA
+                except:
+                    sample = (-1, -1, -1)
+                if sample == self.last_samples[i]:
+                    samples.append((-1, -1, -1))
+                else:
+                    self.last_samples[i] = sample
+                    samples.append(sample)
+            return samples 
+        else:
+            return []
 
     def save(self):
         if self.initialized:
@@ -132,7 +134,6 @@ class LedSymbol():
         return False
 
     def update(self, screen_cap):
-        # if self.initialized:
         rgb_cmds = []
         for strip in self.strips:
             rgb_cmds += strip.get_samples(screen_cap)
@@ -172,8 +173,10 @@ class LedSign(): # ! Should handle all pygame screen/eventinteractions
         self.adjustable = True
 
     def setup(self, vector):
-        symbol = next(iter(filter(lambda x: x.initialized ==
-                             False, self.symbols)), None)
+        symbol = None 
+        for sym in self.symbols:
+            if not sym.initialized:
+                symbol = sym
         if symbol != None:
             symbol.setup(vector)
         else:
