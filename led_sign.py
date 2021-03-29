@@ -22,7 +22,7 @@ class LedStrip():
         # Store the last record values in order to prevent sending duplicates unnecessrily
         self.last_samples = [(0, 0, 0), ] * led_cnt
 
-        self.start_control = pygame.math.Vector2(0,0) 
+        self.start_control = pygame.math.Vector2(1,1) 
         self.end_control = pygame.math.Vector2(0,0)
     
     def setup(self, vector):
