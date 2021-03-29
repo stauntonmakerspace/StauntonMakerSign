@@ -225,7 +225,7 @@ class LedSign(): # ! Should handle all pygame screen/eventinteractions
                                     break
         if True: # self.initialized:
             for i in range(len(self.symbols) - 1, -1, -1): # Update in reverse to limit downtime. Since symbols are daisychained
-                cmds = self.symbols[i].update(screen, events)
+                cmds = self.symbols[i].update(screen)
                 updated = False
                 for led_num, cmd in enumerate(cmds):
                     if cmd[0] != -1: # Do not update LEDs that have not changed 
