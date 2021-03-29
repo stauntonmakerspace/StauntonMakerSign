@@ -64,6 +64,6 @@ while running:
     sign.update(screen, events)
     #sign.draw(screen)
 
-    pygame.display.flip()
+    pygame.display.update()
     # - constant game speed / FPS -
     clock.tick(FPS)
