@@ -29,10 +29,10 @@ sign.save("sign.txt")
 sign = LedSign.load("sign.txt")
 
 try:
-    ser = serial.Serial('/dev/cu.usbserial-1420', 500000)
+    ser = serial.Serial('COM4', 500000)
 except:
     ser = SerialMock()
-    
+
 sign.attach(ser)
 sign.adjustable = True
 

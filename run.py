@@ -25,7 +25,7 @@ def depth_frame_ready(frame):
         fg = cv2.blur(fg, ksize)
         fg = cv2.resize(fg, FULL_WINSIZE[::-1]).astype("int32")
         fg_frame = fg
-        
+
 def main():
     """Initialize and run the game."""
     pygame.init()
@@ -59,8 +59,8 @@ def main():
                         break
             if type(fg_frame) != type(None):
                 pygame.surfarray.blit_array(screen, fg_frame)
-            # sign.update(screen, events)
-            # sign.draw(screen)
+                sign.update(screen, events)
+                sign.draw(screen)
             pygame.display.update()
 
 if __name__ == '__main__':
