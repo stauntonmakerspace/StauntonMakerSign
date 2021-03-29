@@ -62,7 +62,7 @@ while running:
     pygame.draw.rect(screen, (255,0,255), rect)
 
     sign.update(screen, events)
-    #sign.draw(screen)
+    sign.draw(screen)
 
     pygame.display.update()
     # - constant game speed / FPS -

@@ -117,15 +117,17 @@ class LedSymbol():
 
     def draw(self, screen):
         if True: #self.initialized:
-            for strip_num in range(len(self.strips) - 1):
-                self.strips[strip_num].draw(screen)
-                pygame.draw.line(
-                    screen, (0, 0, 255), self.strips[strip_num].end_control, self.strips[strip_num + 1].start_control, 1)
-            self.strips[-1].draw(screen)
-            
-            pygame.draw.circle(screen, (255, 255, 255),
-                            (self.strips[0].start_control.x - 15,  self.strips[0].start_control.y - 15), 4)
-
+            try:
+                for strip_num in range(len(self.strips) - 1):
+                    self.strips[strip_num].draw(screen)
+                    pygame.draw.line(
+                        screen, (0, 0, 255), self.strips[strip_num].end_control, self.strips[strip_num + 1].start_control, 1)
+                self.strips[-1].draw(screen)
+                
+                pygame.draw.circle(screen, (255, 255, 255),
+                                (self.strips[0].start_control.x - 15,  self.strips[0].start_control.y - 15), 4)
+            except:
+                pass
     def adjust_controls(self, vector):
         for strip in self.strips:
             adjusted = strip.adjust_controls(vector)
@@ -177,10 +179,12 @@ class LedSign(): # ! Should handle all pygame screen/eventinteractions
         for sym in self.symbols:
             if not sym.initialized:
                 symbol = sym
-        if symbol != None:
-            symbol.setup(vector)
-        else:
+                break
+
+        if symbol == None:
             self.initialized = True
+        else:
+            symbol.setup(vector)
 
     def draw(self, screen): # ! Move symbol draw code into here
         # * TODO Draw Drag Control 
@@ -251,12 +255,12 @@ class LedSign(): # ! Should handle all pygame screen/eventinteractions
                     x1,y1,x2,y2,led_cnt = line.split()
                     if any([v == -1 for v in [x1,y1,x2,y2,led_cnt]]): break
                     led_cnts[-1].append(int(led_cnt))
-                    cntrl_vectors.append(pygame.math.Vector2(int(x1)+100, int(y1)+100))
-                    cntrl_vectors.append(pygame.math.Vector2(int(x2)+150, int(y2)+150))
-
+                    cntrl_vectors.append(pygame.math.Vector2(int(x1), int(y1)))
+                    cntrl_vectors.append(pygame.math.Vector2(int(x2), int(y2)))
         temp = LedSign(led_cnts)
         for vector in cntrl_vectors:
             temp.setup(vector)
+        temp.initialized = True
         return temp
 
     def save(self, filename):
