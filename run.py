@@ -2,6 +2,7 @@ import thread
 import pygame
 import cv2 
 from pykinect import nui
+import serial
 from led_sign import LedSign, SerialMock
 # pip  install opencv-python==4.2.0.32
 DEPTH_WINSIZE = (320,240)
@@ -40,11 +41,19 @@ def main():
 
     pygame.display.set_caption('PyKinect LED Sign Depth Code')
 
+    try:
+        ser = serial.Serial('COM4', 500000)
+    except:
+        ser = SerialMock()
+        
+        
+    sign = LedSign.load("sign.txt")
+    sign.attach(ser)
+
     with nui.Runtime() as kinect:
         kinect.depth_frame_ready += depth_frame_ready   
         kinect.depth_stream.open(nui.ImageStreamType.Depth, 2, nui.ImageResolution.Resolution320x240, nui.ImageType.Depth)
 
-        sign = LedSign.load("sign.txt")
 
         # Main game loop
         running = True
