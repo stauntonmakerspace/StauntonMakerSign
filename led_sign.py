@@ -66,7 +66,7 @@ class LedStrip():
     def get_samples(self, screen_cap):
         # if self.initialized:
         unit_vector = (
-            (self.start_control - self.end_control).normalize() * self.scale)
+            (self.start_control).normalize() * self.scale)
         samples = []
         for i in range(self.led_cnt):
             sample_point = self.start_control - (unit_vector * i)
