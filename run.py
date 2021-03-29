@@ -47,11 +47,13 @@ def main():
     try:
         ports = list(serial.tools.list_ports.comports())
         for p in ports:
+            print(p)
             if "Arduino" in p.description:
                 print ("This is an Arduino!")
             ser = serial.Serial("COM3", 500000)
         sign.attach(ser)
-    except:
+    except Exception as e:
+        print(e)
         ser = SerialMock()
         sign.attach(ser)        
 
