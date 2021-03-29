@@ -49,7 +49,7 @@ def main():
         for p in ports:
             if "Arduino" in p.description:
                 print ("This is an Arduino!")
-                ser = serial.Serial(p, 500000)
+            ser = serial.Serial("COM3", 500000)
         sign.attach(ser)
     except:
         ser = SerialMock()
