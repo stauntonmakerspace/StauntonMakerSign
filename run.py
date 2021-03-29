@@ -18,7 +18,9 @@ backSub = cv2.bgsegm.createBackgroundSubtractorGSOC()
 def depth_frame_ready(frame):
     global fg_frame
     with screen_lock:
+        # ? Room for speed up in these operations
         frame.image.copy_bits(tmp_s._pixels_address)
+        
         arr2d = (pygame.surfarray.pixels2d(tmp_s) >> 7) & 255
         arr2d = arr2d.astype('float32')
         backtorgb = cv2.cvtColor(arr2d,cv2.COLOR_GRAY2RGB)
@@ -43,19 +45,7 @@ def main():
     pygame.display.set_caption('PyKinect LED Sign Depth Code')
     
     sign = LedSign.load("sign.txt")
-    
-    try:
-        ports = list(serial.tools.list_ports.comports())
-        for p in ports:
-            print(p)
-            if "Arduino" in p.description:
-                print ("This is an Arduino!")
-            ser = serial.Serial("COM3", 500000)
-        sign.attach(ser)
-    except Exception as e:
-        print(e)
-        ser = SerialMock()
-        sign.attach(ser)        
+    sign.attach("COM3")        
 
     with nui.Runtime() as kinect:
         kinect.depth_frame_ready += depth_frame_ready   

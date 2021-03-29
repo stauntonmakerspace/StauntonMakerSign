@@ -11,13 +11,15 @@ class SerialMock():
         pass
 class LedStrip():
     def __init__(self, led_cnt, origin = pygame.math.Vector2(0, 0), scale = 1):
+        self.origin = origin
+        self.scale = scale
+
         self.initialized = False 
         self.led_cnt = led_cnt
 
         # Store the last record values in order to prevent sending duplicates unnecessrily
         self.last_samples = [(0, 0, 0), ] * led_cnt
 
-        self.scale = scale
         self.start_control = None 
         self.end_control = None
     
@@ -59,16 +61,15 @@ class LedStrip():
         #                     point)
         return False
 
-    def update(self, screen, events):
+    def get_samples(self, screen_cap):
         if self.initialized:
             unit_vector = (
                 (self.start_control - self.end_control).normalize() * self.scale)
             samples = []
             for i in range(self.led_cnt):
                 sample_point = self.start_control - (unit_vector * i)
-                # pygame.draw.circle(screen, (0,255,0), (sample_point.x, sample_point.y), 1)
                 try:
-                    sample = screen.get_at(
+                    sample = screen_cap.get_at(
                         (int(sample_point.x), int(sample_point.y)))[:-1]  # Remove A from RGBA
                 except:
                     sample = (-1, -1, -1)
@@ -83,7 +84,7 @@ class LedStrip():
         if self.initialized:
             return self.start_control, self.end_control, self.led_cnt
         else:
-            return 0,0,0,0,0 # None, None, self.led_cnt
+            return pygame.math.Vector2(0,0), pygame.math.Vector2(10,10), self.led_cnt
 
     def move_end_control(self, vector):
         self.end_control = self.start_control - \
@@ -128,11 +129,11 @@ class LedSymbol():
                 break
         return False
 
-    def update(self, screen, events):
+    def update(self, screen_cap):
         if self.initialized:
             rgb_cmds = []
             for strip in self.strips:
-                rgb_cmds += strip.update(screen, events)
+                rgb_cmds += strip.get_samples(screen_cap)
             return rgb_cmds
 
     def save(self):
@@ -176,8 +177,8 @@ class LedSign(): # ! Should handle all pygame screen/eventinteractions
         else:
             self.initialized = True
 
-    def draw(self, screen):
-        # Draw Drag Control 
+    def draw(self, screen): # ! Move symbol draw code into here
+        # * TODO Draw Drag Control 
         for symbol in self.symbols:
             symbol.draw(screen)
 
@@ -245,8 +246,9 @@ class LedSign(): # ! Should handle all pygame screen/eventinteractions
                     x1,y1,x2,y2,led_cnt = line.split()
                     if any([v == -1 for v in [x1,y1,x2,y2,led_cnt]]): break
                     led_cnts[-1].append(int(led_cnt))
-                    cntrl_vectors.append(pygame.math.Vector2(int(x1)+20, int(y1)))
-                    cntrl_vectors.append(pygame.math.Vector2(int(x2)+10, int(y2)))
+                    cntrl_vectors.append(pygame.math.Vector2(int(x1)+100, int(y1)+100))
+                    cntrl_vectors.append(pygame.math.Vector2(int(x2)+150, int(y2)+150))
+
         temp = LedSign(led_cnts)
         for vector in cntrl_vectors:
             temp.setup(vector)
@@ -257,9 +259,8 @@ class LedSign(): # ! Should handle all pygame screen/eventinteractions
             for symbol in self.symbols:
                 filehandle.write('#\n')
                 for strip in symbol.save():
-                    for cntrl in strip:
-                        filehandle.write('%s ' % cntrl)
-                    filehandle.write('\n')
+                    start, end, cnt = strip
+                    filehandle.write("{} {} {} {} {}\n".format(int(start.x), int(start.y), int(end.x), int(end.y), cnt))
                     
     def closest_control(self, vector):
         # (symbol number: int, strip number: int, Is start point: bool)
@@ -280,12 +281,11 @@ class LedSign(): # ! Should handle all pygame screen/eventinteractions
                 for p in ports:
                     if "COM" in p:
                         serial_port = p
-            ser = serial.Serial(serial_port, 500000)
+            self.ser = serial.Serial(serial_port, 500000)
         except Exception as e:
             print(e)
-            ser = SerialMock()
-        self.ser = ser
-
+            self.ser = SerialMock()
+        
     def send_cmd(self, device_num, led_num, R, G, B):
         """ cmd_bytearray
         0: Singifies the start of a cmd

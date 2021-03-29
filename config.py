@@ -18,22 +18,18 @@ sign = LedSign(
     [7, 3, 3, 3, 7, 13, 3, 6, 4, 8],    # a
     [10, 28, 8, 12, 7, 12, 7],          # k
     [13, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3], # e
-    [10, 10, 10], # r
-    [10, 10, 10],# S
-    [10, 10, 10],# p
-    [10, 10, 10],# a
-    [10, 10, 10],# c
-    [10, 10, 10]# e
+    [12, 16, 8, 6, 5], # r
+    [3, 6, 3, 3, 9, 3, 4, 6, 3 ],# S
+    [7, 15, 12, 6, 7],# p
+    [5, 20, 18, 7, 8],# a
+    [3, 3, 5, 5, 5, 5, 5, 5],# c
+    [11, 4, 6, 7, 9, 9, 7]# e
     ])
 sign.save("sign.txt")
+
 sign = LedSign.load("sign.txt")
+sign.attach("COM4")
 
-try:
-    ser = serial.Serial('COM4', 500000)
-except:
-    ser = SerialMock()
-
-sign.attach(ser)
 sign.adjustable = True
 
 rect = pygame.rect.Rect(0, 0, width//5, height)
