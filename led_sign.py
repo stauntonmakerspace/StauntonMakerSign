@@ -167,7 +167,7 @@ class LedSymbol():
 
 
 class LedSign(): # ! Should handle all pygame screen/eventinteractions
-    def __init__(self, led_cnts, serial_port = None):
+    def __init__(self, led_cnts, serial_port = None, origin = None):
         self.symbols = []
         for cnts in led_cnts:
             self.symbols.append(LedSymbol(cnts))
@@ -229,16 +229,16 @@ class LedSign(): # ! Should handle all pygame screen/eventinteractions
                                 adjusted = symbol.adjust_controls(point)
                                 if adjusted:
                                     break
-        if True: # self.initialized:
-            for i in range(len(self.symbols) - 1, -1, -1): # Update in reverse to limit downtime. Since symbols are daisychained
-                cmds = self.symbols[i].update(screen)
-                updated = False
-                for led_num, cmd in enumerate(cmds):
-                    if cmd[0] != -1: # Do not update LEDs that have not changed 
-                        updated = True
-                        self.send_cmd(i, led_num, cmd[0], cmd[1], cmd[2])
-                if updated:
-                    self.send_cmd(i, 255, 0, 0, 0)
+    
+        for i in range(len(self.symbols) - 1, -1, -1): # Update in reverse to limit downtime. Since symbols are daisychained
+            cmds = self.symbols[i].update(screen)
+            updated = False
+            for led_num, cmd in enumerate(cmds):
+                if cmd[0] != -1: # Do not update LEDs that have not changed to save bandwidth 
+                    updated = True
+                    self.send_cmd(i, led_num, cmd[0], cmd[1], cmd[2])
+            if updated:
+                self.send_cmd(i, 255, 0, 0, 0)
 
     @staticmethod
     def load(filename):
@@ -258,7 +258,6 @@ class LedSign(): # ! Should handle all pygame screen/eventinteractions
                     cntrl_vectors.append(pygame.math.Vector2(int(x2), int(y2)))
         temp = LedSign(led_cnts)
         for vector in cntrl_vectors:
-            print(1,vector)
             temp.setup(vector)
         assert(temp.initialized == True)
         return temp
