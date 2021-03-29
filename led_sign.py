@@ -23,7 +23,7 @@ class LedStrip():
         self.last_samples = [(0, 0, 0), ] * led_cnt
 
         self.start_control = None 
-        self.end_control = None
+        self.end_control = pygame.math.Vector2(0,0)
     
     def setup(self, vector):
         if self.start_control == None:
