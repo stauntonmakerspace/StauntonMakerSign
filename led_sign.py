@@ -1,4 +1,6 @@
 import serial
+
+import serial.tools.list_ports
 import pygame
 import pickle
 
