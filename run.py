@@ -3,6 +3,7 @@ import pygame
 import cv2 
 from pykinect import nui
 import serial
+import serial.tools.list_ports
 from led_sign import LedSign, SerialMock
 # pip  install opencv-python==4.2.0.32
 DEPTH_WINSIZE = (320,240)
@@ -40,15 +41,19 @@ def main():
     FULL_WINSIZE = pygame.display.get_surface().get_size()
 
     pygame.display.set_caption('PyKinect LED Sign Depth Code')
-
+    
+    sign = LedSign.load("sign.txt")
+    
     try:
-        ser = serial.Serial('COM4', 500000)
+        ports = list(serial.tools.list_ports.comports())
+        for p in ports:
+            if "Arduino" in p.description:
+                print ("This is an Arduino!")
+                ser = serial.Serial(p, 500000)
+        sign.attach(ser)
     except:
         ser = SerialMock()
-        
-        
-    sign = LedSign.load("sign.txt")
-    sign.attach(ser)
+        sign.attach(ser)        
 
     with nui.Runtime() as kinect:
         kinect.depth_frame_ready += depth_frame_ready   
