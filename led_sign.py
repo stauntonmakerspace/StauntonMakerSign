@@ -13,7 +13,7 @@ class SerialMock():
 
 class LedStrip():
     def __init__(self, led_cnt):
-        self.initialized = False
+        self.initialized = False 
         self.start_set = False
         self.led_cnt = led_cnt
         self.adjusting = False
@@ -24,7 +24,7 @@ class LedStrip():
         self.start_control = pygame.math.Vector2(led_cnt, led_cnt)
         self.end_control = pygame.math.Vector2(
             led_cnt * self.scale, led_cnt * self.scale)
-
+    
     def setup(self, vector):
         if not self.start_set:
             self.start_control = vector
