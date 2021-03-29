@@ -58,8 +58,8 @@ def main():
                         break
             if type(fg_frame) != type(None):
                 pygame.surfarray.blit_array(screen, fg_frame)
-            sign.update(screen, events)
-            sign.draw(screen)
+            # sign.update(screen, events)
+            # sign.draw(screen)
             pygame.display.update()
 
 if __name__ == '__main__':
