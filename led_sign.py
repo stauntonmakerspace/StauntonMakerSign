@@ -223,7 +223,7 @@ class LedSign(): # ! Should handle all pygame screen/eventinteractions
                                 adjusted = symbol.adjust_controls(point)
                                 if adjusted:
                                     break
-        if self.initialized:
+        if True: # self.initialized:
             for i in range(len(self.symbols) - 1, -1, -1): # Update in reverse to limit downtime. Since symbols are daisychained
                 cmds = self.symbols[i].update(screen, events)
                 updated = False
