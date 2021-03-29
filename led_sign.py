@@ -9,8 +9,6 @@ class SerialMock():
 
     def write(self, bytes):
         pass
-
-
 class LedStrip():
     def __init__(self, led_cnt):
         self.initialized = False 
@@ -30,16 +28,17 @@ class LedStrip():
             self.start_control = vector
             self.start_set = True
         else:
-            self.set_end_control(vector)
+            self.move_end_control(vector)
             self.initialized = True
 
     def draw(self, screen):
-        pygame.draw.line(screen, (255, 0, 0),
-                         self.start_control, self.end_control, 6)
-        pygame.draw.circle(screen, (0, 255, 255),
-                           (self.start_control.x,  self.start_control.y), 4)
-        pygame.draw.circle(screen, (0, 255, 255),
-                           (self.end_control.x,  self.end_control.y), 4)
+        if self.initialized:
+            pygame.draw.line(screen, (255, 0, 0),
+                            self.start_control, self.end_control, 6)
+            pygame.draw.circle(screen, (0, 255, 255),
+                            (self.start_control.x,  self.start_control.y), 4)
+            pygame.draw.circle(screen, (0, 255, 255),
+                            (self.end_control.x,  self.end_control.y), 4)
 
     def adjust_controls(self, screen, events):
         return False
@@ -59,10 +58,10 @@ class LedStrip():
         #             mouse_x, mouse_y = event.pos
         #             point = pygame.math.Vector2(mouse_x, mouse_y)
         #             if self.active_control[2] == 1:
-        #                 self.symbols[self.active_control[0]].strips[self.active_control[1]].set_start_control(
+        #                 self.symbols[self.active_control[0]].strips[self.active_control[1]].move_start_control(
         #                     point)
         #             else:
-        #                 self.symbols[self.active_control[0]].strips[self.active_control[1]].set_end_control(
+        #                 self.symbols[self.active_control[0]].strips[self.active_control[1]].move_end_control(
         #                     point)
 
     def update(self, screen, events):
@@ -84,22 +83,19 @@ class LedStrip():
                 samples.append(sample)
         return samples
 
-        def save(self):
-            pass
 
     def save(self):
         return (int(self.start_control.x),int(self.start_control.y), int(self.end_control.x),int(self.end_control.y), self.led_cnt)
 
-    def set_end_control(self, end_control):
+    def move_end_control(self, end_control):
         self.end_control = self.start_control - \
             ((self.start_control - end_control).normalize()
              * self.led_cnt * self.scale)
 
-    def set_start_control(self, start_control):
+    def move_start_control(self, start_control):
         self.start_control = self.end_control - \
             ((self.end_control - start_control).normalize()
              * self.led_cnt * self.scale)
-
 
 class LedSymbol():
     def __init__(self, strip_lengths):
@@ -204,10 +200,10 @@ class LedSign():
                     mouse_x, mouse_y = event.pos
                     point = pygame.math.Vector2(mouse_x, mouse_y)
                     if self.active_control[2] == 1:
-                        self.symbols[self.active_control[0]].strips[self.active_control[1]].set_start_control(
+                        self.symbols[self.active_control[0]].strips[self.active_control[1]].move_start_control(
                             point)
                     else:
-                        self.symbols[self.active_control[0]].strips[self.active_control[1]].set_end_control(
+                        self.symbols[self.active_control[0]].strips[self.active_control[1]].move_end_control(
                             point)
         return False
 

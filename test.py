@@ -1,66 +1,69 @@
-import thread
-import pygame
-import cv2 
-from pykinect import nui
 from led_sign import LedSign, SerialMock
-# pip  install opencv-python==4.2.0.32
-DEPTH_WINSIZE = (320,240)
-FULL_WINSIZE = (-1,-1)
-screen_lock = thread.allocate()
-screen = None
-fg_frame = None
+import serial
+import pygame
 
-tmp_s = pygame.Surface(DEPTH_WINSIZE, 0, 16)
-backSub = cv2.bgsegm.createBackgroundSubtractorGSOC()
+FPS = 24
+pygame.init()
 
-def depth_frame_ready(frame):
-    global fg_frame
-    with screen_lock:
-        frame.image.copy_bits(tmp_s._pixels_address)
-        arr2d = (pygame.surfarray.pixels2d(tmp_s) >> 7) & 255
-        arr2d = arr2d.astype('float32')
-        backtorgb = cv2.cvtColor(arr2d,cv2.COLOR_GRAY2RGB)
-        ksize = (5, 5)
-        fg = backSub.apply(backtorgb)
-        fg = cv2.blur(fg, ksize)
-        fg = cv2.resize(fg, FULL_WINSIZE[::-1]).astype("int32")
-        fg_frame = fg
-def main():
-    """Initialize and run the game."""
-    pygame.init()
+screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+width, height = pygame.display.get_surface().get_size()
+pygame.display.set_caption("MakerSign Drawing System")
 
-    # Initialize PyGame
-    global screen
-    global FULL_WINSIZE
-    global fg_frame
+clock = pygame.time.Clock()
 
-    screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
-    FULL_WINSIZE = pygame.display.get_surface().get_size()
+running = True
 
-    pygame.display.set_caption('PyKinect LED Sign Depth Code')
+sign = LedSign(
+    [[10, 26, 10, 30, 27, 9, 26, 12],# M 
+#     [7, 3, 3, 3, 7, 10, 10, 10, 10, 10], # a
+#     [10, 10, 10,10,10,10,10], # k
+#     [10, 10, 10,10,10,10,10,10,10,10,10],# e
+#     [10, 10, 10], # r
+#     [10, 10, 10],# S
+#     [10, 10, 10],# p
+#     [10, 10, 10],# a
+#     [10, 10, 10],# c
+#     [10, 10, 10]# e
+    ])
+sign.save("sign.txt")
+sign = LedSign.load("sign.txt")
 
-    with nui.Runtime() as kinect:
-        kinect.depth_frame_ready += depth_frame_ready   
-        kinect.depth_stream.open(nui.ImageStreamType.Depth, 2, nui.ImageResolution.Resolution320x240, nui.ImageType.Depth)
+try:
+    ser = serial.Serial('/dev/cu.usbserial-1420', 500000)
+except:
+    ser = SerialMock()
+    
+sign.attach(ser)
+sign.adjustable = True
 
-        sign = LedSign.load("sign.txt")
+rect = pygame.rect.Rect(0, 0, width//5, height)
+v = [20, 0]
+while running:
+    events = pygame.event.get()
+    for event in events:
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_DOWN:
+                sign.save("sign.txt")
+        if event.type == pygame.QUIT:
+            running = False
+    
+    rect.move_ip(v)
 
-        # Main game loop
-        running = True
-        while running:
-            events = pygame.event.get()
-            for event in events:
-                if event.type == pygame.QUIT:
-                    break
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_ESCAPE:
-                        running = False
-                        break
-            if type(fg_frame) != type(None):
-                pygame.surfarray.blit_array(screen, fg_frame)
-            # sign.update(screen, events)
-            # sign.draw(screen)
-            pygame.display.update()
+    if rect.left < 0:
+        v[0] *= -1
+    if rect.right > width:
+        v[0] *= -1
+    if rect.top < 0:
+        v[1] *= -1
+    if rect.bottom > height:
+        v[1] *= -1
+   
+    screen.fill((0, 0, 0))
+    pygame.draw.rect(screen, (255,0,255), rect)
 
-if __name__ == '__main__':
-    main()
+    sign.update(screen, events)
+    sign.draw(screen)
+
+    pygame.display.flip()
+    # - constant game speed / FPS -
+    clock.tick(FPS)
