@@ -2,8 +2,6 @@ import thread
 import pygame
 import cv2 
 from pykinect import nui
-import serial
-import serial.tools.list_ports
 from led_sign import LedSign, SerialMock
 # pip  install opencv-python==4.2.0.32
 DEPTH_WINSIZE = (320,240)

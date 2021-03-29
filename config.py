@@ -1,5 +1,4 @@
-from led_sign import LedSign, SerialMock
-import serial
+from led_sign import LedSign
 import pygame
 
 FPS = 24
@@ -18,13 +17,14 @@ sign = LedSign(
     [7, 3, 3, 3, 7, 13, 3, 6, 4, 8],    # a
     [10, 28, 8, 12, 7, 12, 7],          # k
     [13, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3], # e
-    [12, 16, 8, 6, 5], # r
-    [3, 6, 3, 3, 9, 3, 4, 6, 3 ],# S
-    [7, 15, 12, 6, 7],# p
-    [5, 20, 18, 7, 8],# a
-    [3, 3, 5, 5, 5, 5, 5, 5],# c
-    [11, 4, 6, 7, 9, 9, 7]# e
+    [12, 16, 8, 6, 5],                  # r
+    [3, 6, 3, 3, 9, 3, 4, 6, 3 ],       # S
+    [7, 15, 12, 6, 7],                  # p
+    [5, 20, 18, 7, 8],                  # a
+    [3, 3, 5, 5, 5, 5, 5, 5],           # c
+    [11, 4, 6, 7, 9, 9, 7]              # e
     ])
+
 sign.save("sign.txt")
 
 sign = LedSign.load("sign.txt")
