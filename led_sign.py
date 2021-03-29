@@ -64,23 +64,23 @@ class LedStrip():
         return False
 
     def get_samples(self, screen_cap):
-        if self.initialized:
-            unit_vector = (
-                (self.start_control - self.end_control).normalize() * self.scale)
-            samples = []
-            for i in range(self.led_cnt):
-                sample_point = self.start_control - (unit_vector * i)
-                try:
-                    sample = screen_cap.get_at(
-                        (int(sample_point.x), int(sample_point.y)))[:-1]  # Remove A from RGBA
-                except:
-                    sample = (-1, -1, -1)
-                if sample == self.last_samples[i]:
-                    samples.append((-1, -1, -1))
-                else:
-                    self.last_samples[i] = sample
-                    samples.append(sample)
-            return samples 
+        # if self.initialized:
+        unit_vector = (
+            (self.start_control - self.end_control).normalize() * self.scale)
+        samples = []
+        for i in range(self.led_cnt):
+            sample_point = self.start_control - (unit_vector * i)
+            try:
+                sample = screen_cap.get_at(
+                    (int(sample_point.x), int(sample_point.y)))[:-1]  # Remove A from RGBA
+            except:
+                sample = (-1, -1, -1)
+            if sample == self.last_samples[i]:
+                samples.append((-1, -1, -1))
+            else:
+                self.last_samples[i] = sample
+                samples.append(sample)
+        return samples 
 
     def save(self):
         if self.initialized:
@@ -114,7 +114,7 @@ class LedSymbol():
             self.initialized = True
 
     def draw(self, screen):
-        if self.initialized:
+        if True: #self.initialized:
             for strip_num in range(len(self.strips) - 1):
                 self.strips[strip_num].draw(screen)
                 pygame.draw.line(
@@ -132,11 +132,11 @@ class LedSymbol():
         return False
 
     def update(self, screen_cap):
-        if self.initialized:
-            rgb_cmds = []
-            for strip in self.strips:
-                rgb_cmds += strip.get_samples(screen_cap)
-            return rgb_cmds
+        # if self.initialized:
+        rgb_cmds = []
+        for strip in self.strips:
+            rgb_cmds += strip.get_samples(screen_cap)
+        return rgb_cmds
 
     def save(self):
         cntrls = []
