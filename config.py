@@ -28,7 +28,7 @@ running = True
 # sign.save("sign.txt")
 
 sign = LedSign.load("sign.txt")
-sign.attach("COM4")
+sign.attach("COM3")
 
 sign.adjustable = True
 
