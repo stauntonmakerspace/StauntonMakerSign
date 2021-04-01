@@ -16,6 +16,8 @@ class LedStrip():
         self.origin = origin
         self.scale = scale
 
+        self.drag_start = None
+
         self.initialized = False 
         self.start_control = None
         self.end_control = None
@@ -35,25 +37,38 @@ class LedStrip():
 
     def draw(self, screen):
         if self.initialized:
+            mid = self.start_control - ((self.start_control - self.end_control) / 2)
             pygame.draw.line(screen, (255, 0, 255),
                             self.start_control, self.end_control, 6)
+            
+            pygame.draw.circle(screen, (255, 255, 255),
+                            (int(mid.x),  int(mid.y)), 4)
             pygame.draw.circle(screen, (0, 0, 255),
                             (self.start_control.x,  self.start_control.y), 4)
             pygame.draw.circle(screen, (255, 0, 0),
                             (self.end_control.x,  self.end_control.y), 4)
 
     def adjust_controls(self, vector):
+        mid = self.start_control - ((self.start_control - self.end_control) / 2)
         if vector.x == -1:
             self.hold = 0
-        if (self.start_control.distance_to(vector) < 10) or self.hold == 1:
+        if (self.start_control.distance_to(vector) < 4) or self.hold == 1:
             self.move_start_control(vector)
             self.hold = 1
             return True
-        elif (self.end_control.distance_to(vector) < 10) or self.hold == 2:
+        elif (self.end_control.distance_to(vector) < 4) or self.hold == 2:
             self.move_end_control(vector)
             self.hold = 2
             return True
-        elif (self.start_control.distance_to(vector) < 4) or self.hold == 3:
+        elif (mid.distance_to(vector) < 4) or self.hold == 3:
+            if self.hold != 3:
+                self.drag_start = vector
+                self.start_control_old = self.start_control
+                self.end_control_old = self.end_control
+                self.hold = 3
+            dist = self.drag_start - vector
+            self.start_control = self.start_control_old - dist
+            self.end_control = self.end_control_old - dist
             return True
         return False
 
@@ -121,7 +136,7 @@ class LedSymbol():
                         screen, (0, 0, 255), self.strips[strip_num].end_control, self.strips[strip_num + 1].start_control, 1)
                 self.strips[-1].draw(screen)
                 
-                pygame.draw.circle(screen, (255, 255, 255),
+                pygame.draw.circle(screen, (255, 255, 0),
                                 (self.strips[0].start_control.x - 15,  self.strips[0].start_control.y - 15), 4)
             except:
                 pass
