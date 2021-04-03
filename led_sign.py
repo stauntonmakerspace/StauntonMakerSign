@@ -118,6 +118,8 @@ class LedSymbol():
             self.strips.append(LedStrip(length))
         self.initialized = False
         self.hold = -1
+        self.drag_start = None
+        self.old_strips = []
 
     def setup(self, vector):
         strip = None
@@ -141,21 +143,43 @@ class LedSymbol():
             except:
                 pass
 
-    def adjust_controls(self, vector, hold = None):
-        if vector.x != -1:
-            self.hold = -1
+    def adjust_controls(self, vector):
+        if vector.x == -1: # Not Release
+            if self.hold == 0:
+                self.strips = self.old_strips 
+                pass
+            self.hold = -1 # Release
 
         if self.hold != -1:
-            self.strips[self.hold].adjust_controls(vector)
+            if self.hold == 0:
+                temp = self.old_strips
+                diff = self.drag_start - vector
+                for i in range(len(temp)):
+                    temp[i].start_control -= diff
+                    temp[i].end_control -= diff
+                self.strips = temp
+
+            else:
+                self.strips[self.hold - 1].adjust_controls(vector)
         else:
-            adjusted = False
-            for i, strip in enumerate(self.strips):
-                adjusted = strip.adjust_controls(vector)
-                if adjusted and vector.x != -1:
-                    self.hold = i 
-                    break
-            return adjusted
+            if self.strips[0].start_control.distance_to(vector) < 50:
+                self.old_strips = self.strips
+                self.drag_start = vector
+                self.hold = 0
+                return True
+            else:
+                adjusted = False
+                for i, strip in enumerate(self.strips):
+                    adjusted = strip.adjust_controls(vector)
+                    if adjusted and vector.x != -1:
+                        self.hold = i + 1
+                        break
+                return adjusted
         return False
+
+    def drag(self, vector):
+        
+        pass
 
     def update(self, screen_cap):
         rgb_cmds = []
