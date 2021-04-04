@@ -29,6 +29,7 @@ running = True
 
 sign = LedSign.load("sign.txt")
 sign.attach("COM3")
+sign.clean()
 
 sign.adjustable = True
 
@@ -59,7 +60,7 @@ while running:
         v[1] *= -1
    
     screen.fill((0, 0, 0))
-    pygame.draw.rect(screen, (0,255,255), rect)
+    pygame.draw.rect(screen, (0,0,0), rect)
 
     sign.update(screen, events)
     sign.draw(screen)

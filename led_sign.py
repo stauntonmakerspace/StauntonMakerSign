@@ -33,7 +33,13 @@ class LedStrip():
             return self.start_control, self.end_control, self.led_cnt
         else:
             return pygame.math.Vector2(0,0), pygame.math.Vector2(1,1), self.led_cnt
+    def move_controls(self, vector):
 
+        mid = self.start_control - ((self.start_control - self.end_control) / 2)
+        diff = vector - mid 
+        self.start_control += diff
+        self.end_control += diff
+        
     def move_end_control(self, vector):
         self.end_control = self.start_control - \
             ((self.start_control - vector).normalize()
@@ -49,7 +55,7 @@ class LedStrip():
         return [self.start_control, self.end_control]
 class LedSymbol():
     def __init__(self, strip_lengths = None, position = None):
-        self.position = position if position != None else pygame.math.Vector2(0, 0)
+        self.position = position if position != None else pygame.math.Vector2(100, 100)
         
         self.strips = []
         for length in strip_lengths:
@@ -89,7 +95,7 @@ class LedSign(): # ! Should handle all pygame screen/event interactions
 
         for cnts in led_cnts:
             self.symbols.append(LedSymbol(cnts)) # , position = self.position))
-            self.symbol_history.append([(0,0,0), ] * sum(cnts))  
+            self.symbol_history.append([(-1,-1,-1), ] * sum(cnts))  
 
         self.attach(serial_port)
         
@@ -143,8 +149,9 @@ class LedSign(): # ! Should handle all pygame screen/event interactions
             cntrl_pnts = symbol.get_control_points()
             pose = cntrl_pnts[0][0]
             pygame.draw.circle(screen, (255, 100, 0),
-                                (pose.x,  pose.y), 40)
-            for start, end in cntrl_pnts[1:]:
+                                (pose.x,  pose.y), 10)
+            for i in range(1,len(cntrl_pnts)):
+                start, end = cntrl_pnts[i]
                 start = start + self.position + pose
                 end = end + self.position + pose
                 mid = start - ((start - end) / 2)
@@ -160,7 +167,30 @@ class LedSign(): # ! Should handle all pygame screen/event interactions
 
                 pygame.draw.circle(screen, (255, 0, 0),
                                 (end.x,  end.y), 4)
-      
+                if i > 1:
+                    pygame.draw.line(screen, (0, 0, 255),
+                                    start,self.position + pose + cntrl_pnts[i - 1][1], 2)
+    def clean(self):
+        for symbol in self.symbols:
+            pnts = symbol.get_control_points()[1:]
+            MAX = pygame.math.Vector2(0,0)
+            MIN = pygame.math.Vector2(10e5,10e5)
+            for pair in pnts:
+                for pnt in pair:
+                    if pnt.x > MAX.x:
+                        MAX.x = pnt.x 
+                    if pnt.y > MAX.y:
+                        MAX.y = pnt.y
+                    if pnt.x < MIN.x:
+                        MIN.x = pnt.x -20
+                    if pnt.y < MIN.y:
+                        MIN.y = pnt.y -20
+            for strip in symbol.strips:
+                strip.end_control -= MIN
+                strip.start_control -= MIN
+                        
+
+
     def adjust_controls(self, vector = None):
         if vector == None:
             self.hold = [0,0,0,0]
@@ -172,32 +202,37 @@ class LedSign(): # ! Should handle all pygame screen/event interactions
                         self.symbols[self.hold[1] - 1].strips[self.hold[2] - 1].move_start_control(vector - self.symbols[self.hold[1] - 1].position)
                     elif self.hold[3] == 2:
                         self.symbols[self.hold[1] - 1].strips[self.hold[2] - 1].move_end_control(vector - self.symbols[self.hold[1] - 1].position)
-                    elif self.hold[3] == 2:
-                        self.symbols[self.hold[1] - 1].strips[self.hold[2] - 1].move_end_control(self.position - self.symbols[self.hold[1] - 1].position + vector)
+                    elif self.hold[3] == 3:
+                        self.symbols[self.hold[1] - 1].strips[self.hold[2] - 1].move_controls(self.position - self.symbols[self.hold[1] - 1].position + vector)
                 else:
                     self.symbols[self.hold[1] - 1].set_position(self.position + vector)
             else:
                 for num, symbol in enumerate(self.symbols):
                     cntrl_pnts = symbol.get_control_points()
-                    if symbol.position.distance_to(vector) < 20:
+                    if symbol.position.distance_to(vector) < 10:
                         self.hold[1] = num + 1
                         return True
                     strip_num = 1 
                     for start, end in cntrl_pnts[1:]:
                         start = start + self.position + symbol.position
                         end = end + self.position + symbol.position
-                        if start.distance_to(vector) < 20:
+                        mid = start - ((start - end) / 2)
+                        if start.distance_to(vector) < 5:
                             self.hold[1] = num + 1
                             self.hold[2] = strip_num
                             self.hold[3] = 1
                             return True
 
-                        elif end.distance_to(vector) < 20:
+                        elif end.distance_to(vector) < 5:
                             self.hold[1] = num + 1
                             self.hold[2] = strip_num
                             self.hold[3] = 2
                             return True
-                        elif False:
+
+                        elif mid.distance_to(vector) < 5:
+                            self.hold[1] = num + 1
+                            self.hold[2] = strip_num
+                            self.hold[3] = 3
                             return True
                         strip_num += 1
                 return False
@@ -239,8 +274,8 @@ class LedSign(): # ! Should handle all pygame screen/event interactions
                         x1,y1,x2,y2,led_cnt = [int(i) for i in data]
                         if any([v == -1 for v in [x1,y1,x2,y2,led_cnt]]): break
                         led_cnts[-1].append(int(led_cnt))
-                        cntrl_vectors.append(pygame.math.Vector2(x1, y1))
-                        cntrl_vectors.append(pygame.math.Vector2(x2, y2))
+                        cntrl_vectors.append(pygame.math.Vector2(x1 , y1 ))
+                        cntrl_vectors.append(pygame.math.Vector2(x2, y2 ))
                     elif len(data) == 2:
                         pass
         temp = LedSign(led_cnts)
