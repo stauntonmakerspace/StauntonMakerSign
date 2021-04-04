@@ -112,6 +112,7 @@ class LedSign(): # ! Should handle all pygame screen/event interactions
 
     def sample_screen(self, screen):
         for num, symbol in reversed(list(enumerate(self.symbols))):
+            if num == 3: continue
             led_num = 0 
             updated = False
             for strip in symbol.strips:
