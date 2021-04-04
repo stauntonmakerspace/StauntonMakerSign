@@ -49,7 +49,7 @@ class LedStrip():
         return [self.start_control, self.end_control]
 class LedSymbol():
     def __init__(self, strip_lengths = None, position = None):
-        self.position = position if position != None else pygame.math.Vector2(20, 200)
+        self.position = position if position != None else pygame.math.Vector2(0, 0)
         
         self.strips = []
         for length in strip_lengths:
