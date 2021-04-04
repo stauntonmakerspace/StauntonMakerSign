@@ -12,21 +12,14 @@ class SerialMock():
     def write(self, bytes):
         pass
 class LedStrip():
-    def __init__(self, led_cnt, origin = pygame.math.Vector2(0, 0), scale = 4):
-        self.origin = origin
+    def __init__(self, led_cnt, scale = 4):
+        self.initialized = False 
         self.scale = scale
 
-        self.drag_start = None
-
-        self.initialized = False 
         self.start_control = None
         self.end_control = None
-        self.hold = 0
 
         self.led_cnt = led_cnt
-
-        # Store the last record values in order to prevent sending duplicates unnecessrily
-        self.last_samples = [(0, 0, 0), ] * led_cnt
 
     def setup(self, vector):
         if self.start_control == None:
@@ -34,64 +27,6 @@ class LedStrip():
         else:
             self.move_end_control(vector)
             self.initialized = True
-
-    def draw(self, screen):
-        if self.initialized:
-            mid = self.start_control - ((self.start_control - self.end_control) / 2)
-            pygame.draw.line(screen, (255, 0, 255),
-                            self.start_control, self.end_control, 6)
-            
-            pygame.draw.circle(screen, (255, 255, 255),
-                            (int(mid.x),  int(mid.y)), 4)
-            pygame.draw.circle(screen, (0, 0, 255),
-                            (self.start_control.x,  self.start_control.y), 4)
-            pygame.draw.circle(screen, (255, 0, 0),
-                            (self.end_control.x,  self.end_control.y), 4)
-
-    def adjust_controls(self, vector):
-        mid = self.start_control - ((self.start_control - self.end_control) / 2)
-        if vector.x == -1:
-            self.hold = 0
-        if (self.start_control.distance_to(vector) < 4) or self.hold == 1:
-            self.move_start_control(vector)
-            self.hold = 1
-            return True
-        elif (self.end_control.distance_to(vector) < 4) or self.hold == 2:
-            self.move_end_control(vector)
-            self.hold = 2
-            return True
-        elif (mid.distance_to(vector) < 4) or self.hold == 3:
-            if self.hold != 3:
-                self.drag_start = vector
-                self.start_control_old = self.start_control
-                self.end_control_old = self.end_control
-                self.hold = 3
-            dist = self.drag_start - vector
-            self.start_control = self.start_control_old - dist
-            self.end_control = self.end_control_old - dist
-            return True
-        return False
-
-    def get_samples(self, screen_cap):
-        if self.initialized:
-            unit_vector = (
-                (self.start_control - self.end_control).normalize() * self.scale)
-            samples = []
-            for i in range(self.led_cnt):
-                sample_point = self.start_control - (unit_vector * i)
-                try:
-                    sample = screen_cap.get_at(
-                        (int(sample_point.x), int(sample_point.y)))[:-1]  # Remove A from RGBA
-                except:
-                    sample = (-1, -1, -1)
-                if sample == self.last_samples[i]:
-                    samples.append((-1, -1, -1))
-                else:
-                    self.last_samples[i] = sample
-                    samples.append(sample)
-            return samples 
-        else:
-            return [(-1, -1, -1), ] * self.led_cnt
 
     def save(self):
         if self.initialized:
@@ -108,18 +43,19 @@ class LedStrip():
         self.start_control = self.end_control - \
             ((self.end_control - vector).normalize()
              * self.led_cnt * self.scale)
+        
 
+    def get_control_points(self):
+        return [self.start_control, self.end_control]
 class LedSymbol():
-    def __init__(self, strip_lengths = None, origin = None):
+    def __init__(self, strip_lengths = None, position = None):
+        self.position = position if position != None else pygame.math.Vector2(20, 200)
+        
         self.strips = []
-        if origin == None:
-            self.origin = pygame.math.Vector2(0, 0)
         for length in strip_lengths:
             self.strips.append(LedStrip(length))
+
         self.initialized = False
-        self.hold = -1
-        self.drag_start = None
-        self.old_strips = []
 
     def setup(self, vector):
         strip = None
@@ -128,64 +64,6 @@ class LedSymbol():
                 strip.setup(vector)
                 break
         self.initialized = all([strip.initialized for strip in self.strips])
-
-    def draw(self, screen):
-        if self.initialized:
-            try:
-                for strip_num in range(len(self.strips) - 1):
-                    self.strips[strip_num].draw(screen)
-                    pygame.draw.line(
-                        screen, (0, 0, 255), self.strips[strip_num].end_control, self.strips[strip_num + 1].start_control, 1)
-                self.strips[-1].draw(screen)
-                
-                pygame.draw.circle(screen, (255, 255, 0),
-                                (self.strips[0].start_control.x - 15,  self.strips[0].start_control.y - 15), 4)
-            except:
-                pass
-
-    def adjust_controls(self, vector):
-        if vector.x == -1: # Not Release
-            if self.hold == 0:
-                self.strips = self.old_strips 
-                pass
-            self.hold = -1 # Release
-
-        if self.hold != -1:
-            if self.hold == 0:
-                temp = self.old_strips
-                diff = self.drag_start - vector
-                for i in range(len(temp)):
-                    temp[i].start_control -= diff
-                    temp[i].end_control -= diff
-                self.strips = temp
-
-            else:
-                self.strips[self.hold - 1].adjust_controls(vector)
-        else:
-            if self.strips[0].start_control.distance_to(vector) < 50:
-                self.old_strips = self.strips
-                self.drag_start = vector
-                self.hold = 0
-                return True
-            else:
-                adjusted = False
-                for i, strip in enumerate(self.strips):
-                    adjusted = strip.adjust_controls(vector)
-                    if adjusted and vector.x != -1:
-                        self.hold = i + 1
-                        break
-                return adjusted
-        return False
-
-    def drag(self, vector):
-        
-        pass
-
-    def update(self, screen_cap):
-        rgb_cmds = []
-        for strip in self.strips:
-            rgb_cmds += strip.get_samples(screen_cap)
-        return rgb_cmds
 
     def save(self):
         cntrls = []
@@ -202,20 +80,27 @@ class LedSymbol():
             pnts.append(strip.get_control_points())
         return pnts
 
+class LedSign(): # ! Should handle all pygame screen/event interactions
+    def __init__(self, led_cnts, serial_port = None, position = None):
+        self.position = position if position != None else pygame.math.Vector2(0, 0)
 
-class LedSign(): # ! Should handle all pygame screen/eventinteractions
-    def __init__(self, led_cnts, serial_port = None, origin = None):
         self.symbols = []
+        self.symbol_history = []  # Store the last record values in order to prevent sending duplicates unnecessrily
+
         for cnts in led_cnts:
-            self.symbols.append(LedSymbol(cnts))
+            self.symbols.append(LedSymbol(cnts)) # , position = self.position))
+            self.symbol_history.append([(0,0,0), ] * sum(cnts))  
+
         self.attach(serial_port)
-        if origin == None:
-            self.origin = pygame.math.Vector2(0, 0)
         
-        self.hold = 0
+        self.hold = [0, 0, 0, 0] # Dragging, Symbol_Num, Strip_Num, Is_Start
+        self.adjustable = True
 
         self.initialized = False
-        self.adjustable = True
+
+       
+    def set_position(self, position):
+        self.position = position
 
     def setup(self, vector):
         symbol = None 
@@ -225,6 +110,7 @@ class LedSign(): # ! Should handle all pygame screen/eventinteractions
                 break
         self.initialized = all([symbol.initialized for symbol in self.symbols])
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
     def draw(self, screen): # ! Move symbol draw code into here
         # * TODO Draw Drag Control 
@@ -237,11 +123,28 @@ class LedSign(): # ! Should handle all pygame screen/eventinteractions
                 unit_vector = (start - end).normalize() / strip.led_cnt
                 for i in range(strip.led_cnt):
                     sample_point = start - (unit_vector * i)
+=======
+    def sample_screen(self, screen):
+        for num, symbol in reversed(list(enumerate(self.symbols))):
+            led_num = 0 
+            updated = False
+            for strip in symbol.strips:
+                start, end = strip.get_control_points()
+                start = start + self.position + symbol.position
+                end = end + self.position + symbol.position
+                unit_vector = ((start - end).normalize() * 4) 
+                for i in range(strip.led_cnt):
+                    sample_point = end + (unit_vector * i)
+>>>>>>> c8b037deff2397c2b4f6539fb51e44cc55e6ee79
                     try:
                         sample = screen.get_at(
                             (int(sample_point.x), int(sample_point.y)))[:-1]  # Remove A from RGBA
                         pygame.draw.circle(screen, (0, 255, 0),
+<<<<<<< HEAD
                             (int(sample_point.x),  int(sample_point.y)), 5)
+=======
+                                (int(sample_point.x),  int(sample_point.y)), 5)
+>>>>>>> c8b037deff2397c2b4f6539fb51e44cc55e6ee79
                     except:
                         sample = (-1, -1, -1)
                     if sample != self.symbol_history[num][i]:
@@ -252,6 +155,7 @@ class LedSign(): # ! Should handle all pygame screen/eventinteractions
             if updated:
                 self.send_cmd(num, 255, 0, 0, 0)    
 
+<<<<<<< HEAD
 
     
     def draw(self, screen): # ! Move symbol draw code into here
@@ -263,6 +167,17 @@ class LedSign(): # ! Should handle all pygame screen/eventinteractions
             for start, end in cntrl_pnts[1:]:
                 start -= self.position - pose
                 end -= self.position - pose
+=======
+    def draw(self, screen):
+        for num, symbol in enumerate(self.symbols):
+            cntrl_pnts = symbol.get_control_points()
+            pose = cntrl_pnts[0][0]
+            pygame.draw.circle(screen, (255, 100, 0),
+                                (pose.x,  pose.y), 40)
+            for start, end in cntrl_pnts[1:]:
+                start = start + self.position + pose
+                end = end + self.position + pose
+>>>>>>> c8b037deff2397c2b4f6539fb51e44cc55e6ee79
                 mid = start - ((start - end) / 2)
                 
                 pygame.draw.line(screen, (255, 0, 255),
@@ -277,13 +192,21 @@ class LedSign(): # ! Should handle all pygame screen/eventinteractions
                 pygame.draw.circle(screen, (255, 0, 0),
                                 (end.x,  end.y), 4)
       
+<<<<<<< HEAD
     def adjust_controls(self, vector):
         if vector.x == -1: # Clear HOLD
             self.hold[0] = 0
+=======
+    def adjust_controls(self, vector = None):
+        if vector == None:
+            self.hold = [0,0,0,0]
+            return False
+>>>>>>> c8b037deff2397c2b4f6539fb51e44cc55e6ee79
         if self.hold[0] == 1:
             if self.hold[1] > 0: # Dragging Symbol
                 if self.hold[2] > 0: # Dragging Strip
                     if self.hold[3] == 1: # Dragging Start
+<<<<<<< HEAD
                         self.symbols[self.hold[1] - 1].strips[self.hold[2] - 1].move_start_control(self.position - self.symbols[self.hold[1] - 1].position - vector)
                     elif self.hold[3] == 2:
                         self.symbols[self.hold[1] - 1].strips[self.hold[2] - 1].move_end_control(self.position - self.symbols[self.hold[1] - 1].position - vector)
@@ -299,6 +222,40 @@ class LedSign(): # ! Should handle all pygame screen/eventinteractions
             self.origin = vector
             return True
         return False
+=======
+                        self.symbols[self.hold[1] - 1].strips[self.hold[2] - 1].move_start_control(vector - self.symbols[self.hold[1] - 1].position)
+                    elif self.hold[3] == 2:
+                        self.symbols[self.hold[1] - 1].strips[self.hold[2] - 1].move_end_control(vector - self.symbols[self.hold[1] - 1].position)
+                    elif self.hold[3] == 2:
+                        self.symbols[self.hold[1] - 1].strips[self.hold[2] - 1].move_end_control(self.position - self.symbols[self.hold[1] - 1].position + vector)
+                else:
+                    self.symbols[self.hold[1] - 1].set_position(self.position + vector)
+            else:
+                for num, symbol in enumerate(self.symbols):
+                    cntrl_pnts = symbol.get_control_points()
+                    if symbol.position.distance_to(vector) < 20:
+                        self.hold[1] = num + 1
+                        return True
+                    strip_num = 1 
+                    for start, end in cntrl_pnts[1:]:
+                        start = start + self.position + symbol.position
+                        end = end + self.position + symbol.position
+                        if start.distance_to(vector) < 20:
+                            self.hold[1] = num + 1
+                            self.hold[2] = strip_num
+                            self.hold[3] = 1
+                            return True
+
+                        elif end.distance_to(vector) < 20:
+                            self.hold[1] = num + 1
+                            self.hold[2] = strip_num
+                            self.hold[3] = 2
+                            return True
+                        elif False:
+                            return True
+                        strip_num += 1
+                return False
+>>>>>>> c8b037deff2397c2b4f6539fb51e44cc55e6ee79
 
     def update(self, screen, events = []):
         if self.adjustable:
@@ -307,8 +264,13 @@ class LedSign(): # ! Should handle all pygame screen/eventinteractions
                     if event.button == 1:
                         mouse_x, mouse_y = event.pos
                         point = pygame.math.Vector2(mouse_x, mouse_y)
+<<<<<<< HEAD
                         self.adjust_controls(point)
                           
+=======
+                        self.hold = [1,0,0,0]
+                        self.adjust_controls(point)
+>>>>>>> c8b037deff2397c2b4f6539fb51e44cc55e6ee79
                         
                 elif event.type == pygame.MOUSEMOTION:
                         mouse_x, mouse_y = event.pos
@@ -317,10 +279,15 @@ class LedSign(): # ! Should handle all pygame screen/eventinteractions
                         
                         
                 elif event.type == pygame.MOUSEBUTTONUP:
+<<<<<<< HEAD
                     if event.button == 1:
                         mouse_x, mouse_y = event.pos
                         point = pygame.math.Vector2(-1, -1)
                         self.adjust_controls(point)
+=======
+                    self.adjust_controls(None)
+
+>>>>>>> c8b037deff2397c2b4f6539fb51e44cc55e6ee79
         self.sample_screen(screen)
 
     @staticmethod
@@ -334,11 +301,15 @@ class LedSign(): # ! Should handle all pygame screen/eventinteractions
                 if "#" in line:
                     led_cnts.append([])
                 else:
-                    x1,y1,x2,y2,led_cnt = line.split()
-                    if any([v == -1 for v in [x1,y1,x2,y2,led_cnt]]): break
-                    led_cnts[-1].append(int(led_cnt))
-                    cntrl_vectors.append(pygame.math.Vector2(int(x1), int(y1)))
-                    cntrl_vectors.append(pygame.math.Vector2(int(x2), int(y2)))
+                    data = line.split()
+                    if len(data) == 5:
+                        x1,y1,x2,y2,led_cnt = [int(i) for i in data]
+                        if any([v == -1 for v in [x1,y1,x2,y2,led_cnt]]): break
+                        led_cnts[-1].append(int(led_cnt))
+                        cntrl_vectors.append(pygame.math.Vector2(x1, y1))
+                        cntrl_vectors.append(pygame.math.Vector2(x2, y2))
+                    elif len(data) == 2:
+                        pass
         temp = LedSign(led_cnts)
         for vector in cntrl_vectors:
             temp.setup(vector)
@@ -381,3 +352,6 @@ class LedSign(): # ! Should handle all pygame screen/eventinteractions
         else:
             pass
             print("DEBUG: Device: {0} Led: {1} R: {2} G: {3} B: {4}".format(device_num, led_num, R, G, B))
+
+
+# Store previous samples within the sign class object
