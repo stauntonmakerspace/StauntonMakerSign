@@ -192,6 +192,15 @@ class LedSymbol():
         for strip in self.strips:
             cntrls.append(strip.save())
         return cntrls
+    
+    def set_position(self, position):
+        self.position = position
+ 
+    def get_control_points(self):
+        pnts = [[self.position]]
+        for strip in self.strips:
+            pnts.append(strip.get_control_points())
+        return pnts
 
 
 class LedSign(): # ! Should handle all pygame screen/eventinteractions
@@ -216,56 +225,103 @@ class LedSign(): # ! Should handle all pygame screen/eventinteractions
                 break
         self.initialized = all([symbol.initialized for symbol in self.symbols])
 
+<<<<<<< Updated upstream
     def draw(self, screen): # ! Move symbol draw code into here
         # * TODO Draw Drag Control 
-        for symbol in self.symbols:
-            symbol.draw(screen)
+            updated = False
+            for strip in symbol.strips:
+                start, end = strip.get_control_points()
+                start -= self.position - symbol.position
+                end -= self.position - symbol.position
 
+                unit_vector = (start - end).normalize() / strip.led_cnt
+                for i in range(strip.led_cnt):
+                    sample_point = start - (unit_vector * i)
+                    try:
+                        sample = screen.get_at(
+                            (int(sample_point.x), int(sample_point.y)))[:-1]  # Remove A from RGBA
+                        pygame.draw.circle(screen, (0, 255, 0),
+                            (int(sample_point.x),  int(sample_point.y)), 5)
+                    except:
+                        sample = (-1, -1, -1)
+                    if sample != self.symbol_history[num][i]:
+                        self.symbol_history[num][i] = sample
+                        self.send_cmd(num, led_num, *sample)
+                        updated = True
+                    led_num += 1
+            if updated:
+                self.send_cmd(num, 255, 0, 0, 0)    
+
+
+    
+    def draw(self, screen): # ! Move symbol draw code into here
+        for num, symbol in enumerate(self.symbols):
+            cntrl_pnts = symbol.get_control_points()
+            pose = cntrl_pnts[0][0]
+            pygame.draw.circle(screen, (255, 255, 0),
+                                (pose.x,  pose.y), 40)
+            for start, end in cntrl_pnts[1:]:
+                start -= self.position - pose
+                end -= self.position - pose
+                mid = start - ((start - end) / 2)
+                
+                pygame.draw.line(screen, (255, 0, 255),
+                                start, end, 6)
+                
+                pygame.draw.circle(screen, (255, 255, 255),
+                                (int(mid.x),  int(mid.y)), 4)
+
+                pygame.draw.circle(screen, (0, 0, 255),
+                                (start.x,  start.y), 4)
+
+                pygame.draw.circle(screen, (255, 0, 0),
+                                (end.x,  end.y), 4)
+      
+    def adjust_controls(self, vector):
+        if vector.x == -1: # Clear HOLD
+            self.hold[0] = 0
+        if self.hold[0] == 1:
+            if self.hold[1] > 0: # Dragging Symbol
+                if self.hold[2] > 0: # Dragging Strip
+                    if self.hold[3] == 1: # Dragging Start
+                        self.symbols[self.hold[1] - 1].strips[self.hold[2] - 1].move_start_control(self.position - self.symbols[self.hold[1] - 1].position - vector)
+                    elif self.hold[3] == 2:
+                        self.symbols[self.hold[1] - 1].strips[self.hold[2] - 1].move_end_control(self.position - self.symbols[self.hold[1] - 1].position - vector)
+                    elif self.hold[3] == 2:
+                        self.symbols[self.hold[1] - 1].strips[self.hold[2] - 1].move_end_control(self.position - self.symbols[self.hold[1] - 1].position - vector)
+                else:
+                    self.symbols[self.hold[1] - 1].set_position(self.position - vector)
+            else:
+                self.set_position(vector)
+            return True
+            
     def adjust_controls(self, vector, hold = None):
-        if (self.origin.distance_to(vector) < 4):
             self.origin = vector
             return True
         return False
 
-    def update(self, screen, events):
-        for event in events:
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 1:
-                    mouse_x, mouse_y = event.pos
-                    point = pygame.math.Vector2(mouse_x, mouse_y)
-                    if self.adjustable:
-                        if not self.adjust_controls(point):
-                            for i, symbol in enumerate(self.symbols): # Find first control point within adjustable range and stop 
-                                adjusted = symbol.adjust_controls(point)
-                                if adjusted:
-                                    self.hold = i
-                                    break
-                    
-            elif event.type == pygame.MOUSEMOTION:
-                    mouse_x, mouse_y = event.pos
-                    point = pygame.math.Vector2(mouse_x, mouse_y)
-                    if self.hold != -1:
-                        self.symbols[self.hold].adjust_controls(point)
-                    
-                    
-            elif event.type == pygame.MOUSEBUTTONUP:
-                if event.button == 1:
-                    mouse_x, mouse_y = event.pos
-                    point = pygame.math.Vector2(-1, -1)
-                    for symbol in self.symbols: # Find first control point within adjustable range and stop 
-                        symbol.adjust_controls(point)
-                    self.hold = -1
-                              
-    
-        for i in range(len(self.symbols) - 1, -1, -1): # Update in reverse to limit downtime. Since symbols are daisychained
-            cmds = self.symbols[i].update(screen)
-            updated = False
-            for led_num, cmd in enumerate(cmds):
-                if cmd[0] != -1: # Do not update LEDs that have not changed to save bandwidth 
-                    updated = True
-                    self.send_cmd(i, led_num, cmd[0], cmd[1], cmd[2])
-            if updated:
-                self.send_cmd(i, 255, 0, 0, 0)
+    def update(self, screen, events = []):
+        if self.adjustable:
+            for event in events:
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if event.button == 1:
+                        mouse_x, mouse_y = event.pos
+                        point = pygame.math.Vector2(mouse_x, mouse_y)
+                        self.adjust_controls(point)
+                          
+                        
+                elif event.type == pygame.MOUSEMOTION:
+                        mouse_x, mouse_y = event.pos
+                        point = pygame.math.Vector2(mouse_x, mouse_y)
+                        self.adjust_controls(point)
+                        
+                        
+                elif event.type == pygame.MOUSEBUTTONUP:
+                    if event.button == 1:
+                        mouse_x, mouse_y = event.pos
+                        point = pygame.math.Vector2(-1, -1)
+                        self.adjust_controls(point)
+        self.sample_screen(screen)
 
     @staticmethod
     def load(filename):
