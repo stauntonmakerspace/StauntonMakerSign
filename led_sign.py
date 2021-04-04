@@ -48,7 +48,7 @@ class LedStrip():
         return [self.start_control, self.end_control]
 class LedSymbol():
     def __init__(self, strip_lengths = None, position = None):
-        self.position = position if position != None else pygame.math.Vector2(0, 0)
+        self.position = position if position != None else pygame.math.Vector2(20, 200)
         
         self.strips = []
         for length in strip_lengths:
@@ -115,14 +115,16 @@ class LedSign(): # ! Should handle all pygame screen/event interactions
             updated = False
             for strip in symbol.strips:
                 start, end = strip.get_control_points()
+                start = start + self.position + symbol.position
+                end = end + self.position + symbol.position
                 unit_vector = ((start - end).normalize() / strip.led_cnt) 
                 for i in range(strip.led_cnt):
-                    sample_point = self.position - symbol.position - start - (unit_vector * i)
+                    sample_point = start + (unit_vector * i * 20)
                     try:
                         sample = screen.get_at(
                             (int(sample_point.x), int(sample_point.y)))[:-1]  # Remove A from RGBA
-                        pygame.draw.circle(screen, (255, 255, 255),
-                                (int(sample_point.x),  int(sample_point.y)), 5)
+                        pygame.draw.circle(screen, (0, 255, 0),
+                                (int(sample_point.x),  int(sample_point.y)), 15)
                     except:
                         sample = (-1, -1, -1)
                     if sample != self.symbol_history[num][i]:
@@ -174,11 +176,13 @@ class LedSign(): # ! Should handle all pygame screen/event interactions
             else:
                 for num, symbol in enumerate(self.symbols):
                     cntrl_pnts = symbol.get_control_points()
-                    if cntrl_pnts[0][0].distance_to(vector) < 20:
+                    if symbol.position.distance_to(vector) < 20:
                         self.hold[1] = num + 1
                         return True
                     strip_num = 1 
                     for start, end in cntrl_pnts[1:]:
+                        start = start + self.position + symbol.position
+                        end = end + self.position + symbol.position
                         if start.distance_to(vector) < 20:
                             self.hold[1] = num + 1
                             self.hold[2] = strip_num
