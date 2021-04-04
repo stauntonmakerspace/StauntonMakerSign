@@ -110,20 +110,6 @@ class LedSign(): # ! Should handle all pygame screen/event interactions
                 break
         self.initialized = all([symbol.initialized for symbol in self.symbols])
 
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-    def draw(self, screen): # ! Move symbol draw code into here
-        # * TODO Draw Drag Control 
-            updated = False
-            for strip in symbol.strips:
-                start, end = strip.get_control_points()
-                start -= self.position - symbol.position
-                end -= self.position - symbol.position
-
-                unit_vector = (start - end).normalize() / strip.led_cnt
-                for i in range(strip.led_cnt):
-                    sample_point = start - (unit_vector * i)
-=======
     def sample_screen(self, screen):
         for num, symbol in reversed(list(enumerate(self.symbols))):
             led_num = 0 
@@ -135,16 +121,11 @@ class LedSign(): # ! Should handle all pygame screen/event interactions
                 unit_vector = ((start - end).normalize() * 4) 
                 for i in range(strip.led_cnt):
                     sample_point = end + (unit_vector * i)
->>>>>>> c8b037deff2397c2b4f6539fb51e44cc55e6ee79
                     try:
                         sample = screen.get_at(
                             (int(sample_point.x), int(sample_point.y)))[:-1]  # Remove A from RGBA
                         pygame.draw.circle(screen, (0, 255, 0),
-<<<<<<< HEAD
-                            (int(sample_point.x),  int(sample_point.y)), 5)
-=======
                                 (int(sample_point.x),  int(sample_point.y)), 5)
->>>>>>> c8b037deff2397c2b4f6539fb51e44cc55e6ee79
                     except:
                         sample = (-1, -1, -1)
                     if sample != self.symbol_history[num][i]:
@@ -155,19 +136,6 @@ class LedSign(): # ! Should handle all pygame screen/event interactions
             if updated:
                 self.send_cmd(num, 255, 0, 0, 0)    
 
-<<<<<<< HEAD
-
-    
-    def draw(self, screen): # ! Move symbol draw code into here
-        for num, symbol in enumerate(self.symbols):
-            cntrl_pnts = symbol.get_control_points()
-            pose = cntrl_pnts[0][0]
-            pygame.draw.circle(screen, (255, 255, 0),
-                                (pose.x,  pose.y), 40)
-            for start, end in cntrl_pnts[1:]:
-                start -= self.position - pose
-                end -= self.position - pose
-=======
     def draw(self, screen):
         for num, symbol in enumerate(self.symbols):
             cntrl_pnts = symbol.get_control_points()
@@ -177,7 +145,6 @@ class LedSign(): # ! Should handle all pygame screen/event interactions
             for start, end in cntrl_pnts[1:]:
                 start = start + self.position + pose
                 end = end + self.position + pose
->>>>>>> c8b037deff2397c2b4f6539fb51e44cc55e6ee79
                 mid = start - ((start - end) / 2)
                 
                 pygame.draw.line(screen, (255, 0, 255),
@@ -192,37 +159,14 @@ class LedSign(): # ! Should handle all pygame screen/event interactions
                 pygame.draw.circle(screen, (255, 0, 0),
                                 (end.x,  end.y), 4)
       
-<<<<<<< HEAD
-    def adjust_controls(self, vector):
-        if vector.x == -1: # Clear HOLD
-            self.hold[0] = 0
-=======
     def adjust_controls(self, vector = None):
         if vector == None:
             self.hold = [0,0,0,0]
             return False
->>>>>>> c8b037deff2397c2b4f6539fb51e44cc55e6ee79
         if self.hold[0] == 1:
             if self.hold[1] > 0: # Dragging Symbol
                 if self.hold[2] > 0: # Dragging Strip
                     if self.hold[3] == 1: # Dragging Start
-<<<<<<< HEAD
-                        self.symbols[self.hold[1] - 1].strips[self.hold[2] - 1].move_start_control(self.position - self.symbols[self.hold[1] - 1].position - vector)
-                    elif self.hold[3] == 2:
-                        self.symbols[self.hold[1] - 1].strips[self.hold[2] - 1].move_end_control(self.position - self.symbols[self.hold[1] - 1].position - vector)
-                    elif self.hold[3] == 2:
-                        self.symbols[self.hold[1] - 1].strips[self.hold[2] - 1].move_end_control(self.position - self.symbols[self.hold[1] - 1].position - vector)
-                else:
-                    self.symbols[self.hold[1] - 1].set_position(self.position - vector)
-            else:
-                self.set_position(vector)
-            return True
-            
-    def adjust_controls(self, vector, hold = None):
-            self.origin = vector
-            return True
-        return False
-=======
                         self.symbols[self.hold[1] - 1].strips[self.hold[2] - 1].move_start_control(vector - self.symbols[self.hold[1] - 1].position)
                     elif self.hold[3] == 2:
                         self.symbols[self.hold[1] - 1].strips[self.hold[2] - 1].move_end_control(vector - self.symbols[self.hold[1] - 1].position)
@@ -255,7 +199,6 @@ class LedSign(): # ! Should handle all pygame screen/event interactions
                             return True
                         strip_num += 1
                 return False
->>>>>>> c8b037deff2397c2b4f6539fb51e44cc55e6ee79
 
     def update(self, screen, events = []):
         if self.adjustable:
@@ -264,13 +207,8 @@ class LedSign(): # ! Should handle all pygame screen/event interactions
                     if event.button == 1:
                         mouse_x, mouse_y = event.pos
                         point = pygame.math.Vector2(mouse_x, mouse_y)
-<<<<<<< HEAD
-                        self.adjust_controls(point)
-                          
-=======
                         self.hold = [1,0,0,0]
                         self.adjust_controls(point)
->>>>>>> c8b037deff2397c2b4f6539fb51e44cc55e6ee79
                         
                 elif event.type == pygame.MOUSEMOTION:
                         mouse_x, mouse_y = event.pos
@@ -279,15 +217,8 @@ class LedSign(): # ! Should handle all pygame screen/event interactions
                         
                         
                 elif event.type == pygame.MOUSEBUTTONUP:
-<<<<<<< HEAD
-                    if event.button == 1:
-                        mouse_x, mouse_y = event.pos
-                        point = pygame.math.Vector2(-1, -1)
-                        self.adjust_controls(point)
-=======
                     self.adjust_controls(None)
 
->>>>>>> c8b037deff2397c2b4f6539fb51e44cc55e6ee79
         self.sample_screen(screen)
 
     @staticmethod
