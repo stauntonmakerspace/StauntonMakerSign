@@ -43,6 +43,7 @@ class LedStrip():
         self.start_control = self.end_control - \
             ((self.end_control - vector).normalize()
              * self.led_cnt * self.scale)
+        
 
     def get_control_points(self):
         return [self.start_control, self.end_control]
@@ -139,7 +140,7 @@ class LedSign(): # ! Should handle all pygame screen/event interactions
         for num, symbol in enumerate(self.symbols):
             cntrl_pnts = symbol.get_control_points()
             pose = cntrl_pnts[0][0]
-            pygame.draw.circle(screen, (255, 0, 0),
+            pygame.draw.circle(screen, (255, 100, 0),
                                 (pose.x,  pose.y), 40)
             for start, end in cntrl_pnts[1:]:
                 start = start + self.position + pose
@@ -166,11 +167,11 @@ class LedSign(): # ! Should handle all pygame screen/event interactions
             if self.hold[1] > 0: # Dragging Symbol
                 if self.hold[2] > 0: # Dragging Strip
                     if self.hold[3] == 1: # Dragging Start
-                        self.symbols[self.hold[1] - 1].strips[self.hold[2] - 1].move_start_control(self.position + self.symbols[self.hold[1] - 1].position + vector)
+                        self.symbols[self.hold[1] - 1].strips[self.hold[2] - 1].move_start_control(vector - self.symbols[self.hold[1] - 1].position)
                     elif self.hold[3] == 2:
-                        self.symbols[self.hold[1] - 1].strips[self.hold[2] - 1].move_end_control(self.position + self.symbols[self.hold[1] - 1].position + vector)
+                        self.symbols[self.hold[1] - 1].strips[self.hold[2] - 1].move_end_control(vector - self.symbols[self.hold[1] - 1].position)
                     elif self.hold[3] == 2:
-                        self.symbols[self.hold[1] - 1].strips[self.hold[2] - 1].move_end_control(self.position + self.symbols[self.hold[1] - 1].position + vector)
+                        self.symbols[self.hold[1] - 1].strips[self.hold[2] - 1].move_end_control(self.position - self.symbols[self.hold[1] - 1].position + vector)
                 else:
                     self.symbols[self.hold[1] - 1].set_position(self.position + vector)
             else:
