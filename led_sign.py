@@ -128,7 +128,9 @@ class LedSign(): # ! Should handle all pygame screen/event interactions
                                 (int(sample_point.x),  int(sample_point.y)), 5)
                     except:
                         sample = (-1, -1, -1)
-                    if sample != self.symbol_history[num][i]:
+                    if sample[0] == -1:
+                        pass
+                    elif sample != self.symbol_history[num][i]:
                         self.symbol_history[num][i] = sample
                         self.send_cmd(num, led_num, *sample)
                         updated = True
