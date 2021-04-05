@@ -153,7 +153,8 @@ class LedSign():  # ! Should handle all pygame screen/event interactions
                     led_num += 1
 
             if updated:
-                self.send_cmd(num, 255, 0, 0, 0)
+                if num != 3:
+                    self.send_cmd(num if num < 3 else num - 1, 255, 0, 0, 0)
 
     def draw(self, screen):
         pygame.draw.circle(screen, (255, 100, 0),
