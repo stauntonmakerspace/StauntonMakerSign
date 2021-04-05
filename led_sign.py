@@ -158,7 +158,7 @@ class LedSign():  # ! Should handle all pygame screen/event interactions
                            (self.position.x,  self.position.y), 10)
         for num, symbol in enumerate(self.symbols):
             cntrl_pnts = symbol.get_control_points()
-            pose = cntrl_pnts[0][0]
+            pose = self.position + cntrl_pnts[0][0]
             pygame.draw.circle(screen, (255, 100, 0),
                                (pose.x,  pose.y), 10)
             for i in range(1, len(cntrl_pnts)):
@@ -220,7 +220,7 @@ class LedSign():  # ! Should handle all pygame screen/event interactions
                 else:
                     self.symbols[self.hold[1] -
                                  1].set_position(self.position + vector)
-            elif self.position.distance_to(vector) < 10:
+            elif self.position.distance_to(vector) < 15:
                 self.position = vector
                 return True
             else:
