@@ -156,7 +156,6 @@ class LedSign():  # ! Should handle all pygame screen/event interactions
                     led_num += 1
 
             if updated:
-                print(sent)
                 self.send_cmd(num, 255, 0, 0, 0)
 
     def draw(self, screen):
