@@ -60,7 +60,7 @@ while running:
         v[1] *= -1
    
     screen.fill((0, 0, 0))
-    pygame.draw.rect(screen, (0,0,0), rect)
+    pygame.draw.rect(screen, (0,255,255), rect)
 
     sign.update(screen, events)
     sign.draw(screen)

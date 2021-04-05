@@ -145,6 +145,8 @@ class LedSign(): # ! Should handle all pygame screen/event interactions
                 self.send_cmd(num, 255, 0, 0, 0)    
 
     def draw(self, screen):
+        pygame.draw.circle(screen, (255, 100, 0),
+                                (self.position.x,  self.position.y), 10)
         for num, symbol in enumerate(self.symbols):
             cntrl_pnts = symbol.get_control_points()
             pose = cntrl_pnts[0][0]
@@ -170,6 +172,7 @@ class LedSign(): # ! Should handle all pygame screen/event interactions
                 if i > 1:
                     pygame.draw.line(screen, (0, 0, 255),
                                     start,self.position + pose + cntrl_pnts[i - 1][1], 2)
+
     def clean(self):
         for symbol in self.symbols:
             pnts = symbol.get_control_points()[1:]
@@ -195,7 +198,7 @@ class LedSign(): # ! Should handle all pygame screen/event interactions
         if vector == None:
             self.hold = [0,0,0,0]
             return False
-        if self.hold[0] == 1:
+        if self.hold[0] == 1:# Button Clicked 
             if self.hold[1] > 0: # Dragging Symbol
                 if self.hold[2] > 0: # Dragging Strip
                     if self.hold[3] == 1: # Dragging Start
@@ -206,6 +209,9 @@ class LedSign(): # ! Should handle all pygame screen/event interactions
                         self.symbols[self.hold[1] - 1].strips[self.hold[2] - 1].move_controls(self.position - self.symbols[self.hold[1] - 1].position + vector)
                 else:
                     self.symbols[self.hold[1] - 1].set_position(self.position + vector)
+            elif self.position.distance_to(vector) < 10:
+                self.position = vector
+                return True
             else:
                 for num, symbol in enumerate(self.symbols):
                     cntrl_pnts = symbol.get_control_points()
