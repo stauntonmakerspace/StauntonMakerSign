@@ -129,7 +129,6 @@ class LedSign():  # ! Should handle all pygame screen/event interactions
 
             led_num = 0
             updated = False
-            sent = 0
             for strip in symbol.strips:
                 start, end = strip.get_control_points()
                 start = start + self.position + symbol.position
@@ -318,6 +317,7 @@ class LedSign():  # ! Should handle all pygame screen/event interactions
             if serial_port == None:
                 ports = list(serial.tools.list_ports.comports())
                 for p in ports:
+                    print(p)
                     if "COM" in p:
                         serial_port = p
             self.ser = serial.Serial(serial_port, 500000)
