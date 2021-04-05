@@ -93,7 +93,7 @@ class LedSign(): # ! Should handle all pygame screen/event interactions
 
         for cnts in led_cnts:
             self.symbols.append(LedSymbol(cnts)) # , position = self.position))
-            self.symbol_history.append([(-1,-1,-1), ] * sum(cnts))  
+            self.symbol_history.append([(0,0,0), ] * sum(cnts))  
 
         self.attach(serial_port)
         
