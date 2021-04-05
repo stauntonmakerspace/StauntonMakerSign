@@ -29,7 +29,6 @@ running = True
 
 sign = LedSign.load("sign.txt")
 sign.attach("COM3")
-sign.clean()
 
 sign.adjustable = True
 
@@ -41,6 +40,9 @@ while running:
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_DOWN:
                 sign.save("sign.txt")
+        if event.type == pygame.KEY_UP:
+            if event.key == pygame.K_DOWN:
+                sign.clean()
         if event.type == pygame.QUIT:
             running = False
         if event.type == pygame.KEYDOWN:
