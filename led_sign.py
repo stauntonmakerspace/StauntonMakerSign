@@ -139,7 +139,7 @@ class LedSign(): # ! Should handle all pygame screen/event interactions
                         self.symbol_history[num][i] = sample
                         if num >= 3: 
                             if num == 3: 
-                                continue
+                                pass
                             else:
                                 self.send_cmd(num - 1, led_num, *sample)
                         else:
