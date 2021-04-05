@@ -118,6 +118,7 @@ class LedSign(): # ! Should handle all pygame screen/event interactions
 
     def sample_screen(self, screen):
         for num, symbol in reversed(list(enumerate(self.symbols))):
+
             led_num = 0 
             updated = False
             for strip in symbol.strips:
@@ -130,20 +131,14 @@ class LedSign(): # ! Should handle all pygame screen/event interactions
                     try:
                         sample = screen.get_at(
                             (int(sample_point.x), int(sample_point.y)))[:-1]  # Remove A from RGBA
-                        # pygame.draw.circle(screen, (0, 255, 0), int(sample_point.x),  int(sample_point.y)), 1)
+                        #pygame.draw.circle(screen, (0, 255, 0), (int(sample_point.x),  int(sample_point.y)), 1)
                     except:
                         sample = (-1, -1, -1)
                     if sample[0] == -1:
                         pass
                     elif sample != self.symbol_history[num][i]:
                         self.symbol_history[num][i] = sample
-                        if num >= 3: 
-                            if num == 3: 
-                                pass
-                            else:
-                                self.send_cmd(num - 1, led_num, *sample)
-                        else:
-                            self.send_cmd(num, led_num, *sample)
+                        self.send_cmd(num, led_num, *sample)
                         updated = True
                     led_num += 1
             if updated:
