@@ -143,7 +143,7 @@ class LedSign():  # ! Should handle all pygame screen/event interactions
                         # pygame.draw.circle(screen, (0, 255, 0), (int(
                         #     sample_point.x),  int(sample_point.y)), 1)
                     except:
-                        sample = (0, 0, 0)
+                        sample = (0, 255, 0)
                     if sample != self.symbol_history[num][led_num]:
                         self.symbol_history[num][led_num] = sample
                         updated = True
