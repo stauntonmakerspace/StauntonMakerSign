@@ -33,7 +33,9 @@ sign.attach("COM3")
 sign.adjustable = True
 
 rect = pygame.rect.Rect(0, 0, width//5, height)
+rect2 = pygame.rect.Rect(width - (width//5), 0, width//5, height)
 v = [20, 0]
+v2 = [-20, 0]
 while running:
     events = pygame.event.get()
     for event in events:
@@ -51,6 +53,7 @@ while running:
                 break
     
     rect.move_ip(v)
+    rect2.move_ip(v2)
 
     if rect.left < 0:
         v[0] *= -1
@@ -60,9 +63,20 @@ while running:
         v[1] *= -1
     if rect.bottom > height:
         v[1] *= -1
+    
+    if rect2.left < 0:
+        v2[0] *= -1
+    if rect2.right > width:
+        v2[0] *= -1
+    if rect2.top < 0:
+        v2[1] *= -1
+    if rect2.bottom > height:
+        v2[1] *= -1
    
     screen.fill((0, 0, 0))
-    pygame.draw.rect(screen, (0,255,255), rect)
+    pygame.draw.rect(screen, (0,0,255), rect)
+
+    pygame.draw.rect(screen, (255,0,0), rect2)
 
     sign.update(screen, events)
     sign.draw(screen)
