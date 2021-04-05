@@ -126,16 +126,15 @@ class LedSign():  # ! Should handle all pygame screen/event interactions
 
     def sample_screen(self, screen):
         for num, symbol in reversed(list(enumerate(self.symbols))):
-
             led_num = 0
             updated = False
             for strip in symbol.strips:
                 start, end = strip.get_control_points()
                 start = start + self.position + symbol.position
                 end = end + self.position + symbol.position
-                unit_vector = ((start - end).normalize() * 4)
+                unit_vector = ((end - start).normalize() * 4)
                 for i in range(strip.led_cnt):
-                    sample_point = end + (unit_vector * i)
+                    sample_point = start + (unit_vector * i)
                     try:
                         sample = screen.get_at(
                             (int(sample_point.x), int(sample_point.y)))[:-1]  # Remove A from RGBA
@@ -172,14 +171,14 @@ class LedSign():  # ! Should handle all pygame screen/event interactions
                 pygame.draw.circle(screen, (255, 255, 255),
                                    (int(mid.x),  int(mid.y)), 4)
 
-                pygame.draw.circle(screen, (0, 0, 255),
+                pygame.draw.circle(screen, (0, 255, 0),
                                    (start.x,  start.y), 4)
 
                 pygame.draw.circle(screen, (255, 0, 0),
                                    (end.x,  end.y), 4)
                 if i > 1:
                     pygame.draw.line(screen, (0, 0, 255),
-                                     start, self.position + pose + cntrl_pnts[i - 1][1], 2)
+                                     start, pose + cntrl_pnts[i - 1][1], 2)
 
     def clean(self):
         for symbol in self.symbols:
