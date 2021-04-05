@@ -40,8 +40,8 @@ while running:
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_DOWN:
                 sign.save("sign.txt")
-        if event.type == pygame.KEY_UP:
-            if event.key == pygame.K_DOWN:
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_UP:
                 sign.clean()
         if event.type == pygame.QUIT:
             running = False
