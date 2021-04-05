@@ -129,7 +129,7 @@ class LedSign(): # ! Should handle all pygame screen/event interactions
                     try:
                         sample = screen.get_at(
                             (int(sample_point.x), int(sample_point.y)))[:-1]  # Remove A from RGBA
-                        #pygame.draw.circle(screen, (0, 255, 0), (int(sample_point.x),  int(sample_point.y)), 1)
+                        pygame.draw.circle(screen, (0, 255, 0), (int(sample_point.x),  int(sample_point.y)), 1)
                     except:
                         sample = (-1, -1, -1)
                     if sample[0] == -1:
@@ -141,8 +141,8 @@ class LedSign(): # ! Should handle all pygame screen/event interactions
                             self.send_cmd(num if num < 3 else num - 1, led_num, *sample)
                         
                     led_num += 1
-        if updated:
-            self.send_cmd(num, 255, 0, 0, 0)    
+            if updated:
+                self.send_cmd(num, 255, 0, 0, 0)    
 
     def draw(self, screen):
         pygame.draw.circle(screen, (255, 100, 0),
