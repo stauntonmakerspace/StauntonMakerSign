@@ -118,12 +118,6 @@ class LedSign(): # ! Should handle all pygame screen/event interactions
 
     def sample_screen(self, screen):
         for num, symbol in reversed(list(enumerate(self.symbols))):
-            if num >= 3: 
-                if num == 3: 
-                    continue
-                else:
-                    num -= 1
-
             led_num = 0 
             updated = False
             for strip in symbol.strips:
@@ -143,7 +137,13 @@ class LedSign(): # ! Should handle all pygame screen/event interactions
                         pass
                     elif sample != self.symbol_history[num][i]:
                         self.symbol_history[num][i] = sample
-                        self.send_cmd(num, led_num, *sample)
+                        if num >= 3: 
+                            if num == 3: 
+                                continue
+                            else:
+                                self.send_cmd(num - 1, led_num, *sample)
+                        else:
+                            self.send_cmd(num, led_num, *sample)
                         updated = True
                     led_num += 1
             if updated:
