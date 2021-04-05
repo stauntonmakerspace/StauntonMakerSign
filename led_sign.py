@@ -181,7 +181,6 @@ class LedSign():  # ! Should handle all pygame screen/event interactions
                 if i > 1:
                     pygame.draw.line(screen, (0, 0, 255),
                                      start, self.position + pose + cntrl_pnts[i - 1][1], 2)
-
     def clean(self):
         for symbol in self.symbols:
             pnts = symbol.get_control_points()[1:]
