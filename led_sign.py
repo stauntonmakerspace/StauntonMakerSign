@@ -34,7 +34,6 @@ class LedStrip():
         else:
             return pygame.math.Vector2(0,0), pygame.math.Vector2(1,1), self.led_cnt
     def move_controls(self, vector):
-
         mid = self.start_control - ((self.start_control - self.end_control) / 2)
         diff = vector - mid 
         self.start_control += diff
@@ -50,7 +49,6 @@ class LedStrip():
             ((self.end_control - vector).normalize()
              * self.led_cnt * self.scale)
         
-
     def get_control_points(self):
         return [self.start_control, self.end_control]
 class LedSymbol():
@@ -138,8 +136,10 @@ class LedSign(): # ! Should handle all pygame screen/event interactions
                         pass
                     elif sample != self.symbol_history[num][i]:
                         self.symbol_history[num][i] = sample
-                        self.send_cmd(num, led_num, *sample)
                         updated = True
+                        if num != 3:
+                            self.send_cmd(num if num < 3 else num - 1, led_num, *sample)
+                        
                     led_num += 1
             if updated:
                 self.send_cmd(num, 255, 0, 0, 0)    
