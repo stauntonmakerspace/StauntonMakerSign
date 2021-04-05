@@ -147,14 +147,11 @@ class LedSign():  # ! Should handle all pygame screen/event interactions
                     if sample != self.symbol_history[num][led_num]:
                         self.symbol_history[num][led_num] = sample
                         updated = True
-                        if num != 3:
-                            self.send_cmd(
-                                num if num < 3 else num - 1, led_num, *sample)
+                        self.send_cmd(num, led_num, *sample)
                     led_num += 1
 
             if updated:
-                if num != 3:
-                    self.send_cmd(num if num < 3 else num - 1, 255, 0, 0, 0)
+                self.send_cmd(num, 255, 0, 0, 0)
 
     def draw(self, screen):
         pygame.draw.circle(screen, (255, 100, 0),
@@ -335,10 +332,12 @@ class LedSign():  # ! Should handle all pygame screen/event interactions
         6: Blue color values 0 - 255
         """
 
-        values = [ord('#'), device_num, led_num, R, G, B]
-        if self.ser != None:
-            self.ser.write(bytearray(values))
-        else:
-            pass
-            print("DEBUG: Device: {0} Led: {1} R: {2} G: {3} B: {4}".format(
-                device_num, led_num, R, G, B))
+        if device_num != 3:
+            values = [ord('#'), device_num if device_num < 3 else device_num - 1, led_num, R, G, B]
+            
+            if self.ser != None:
+                self.ser.write(bytearray(values))
+            else:
+                pass
+                print("DEBUG: Device: {0} Led: {1} R: {2} G: {3} B: {4}".format(
+                    device_num, led_num, R, G, B))
