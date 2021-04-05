@@ -34,8 +34,10 @@ sign.adjustable = True
 
 rect = pygame.rect.Rect(0, 0, width//5, height)
 rect2 = pygame.rect.Rect(width - (width//5), 0, width//5, height)
+rect3 = pygame.rect.Rect(0, 0, width, height//4)
 v = [20, 0]
 v2 = [-20, 0]
+v3 = [0, 20]
 while running:
     events = pygame.event.get()
     for event in events:
@@ -54,6 +56,7 @@ while running:
     
     rect.move_ip(v)
     rect2.move_ip(v2)
+    rect3.move_ip(v3)
 
     if rect.left < 0:
         v[0] *= -1
@@ -72,8 +75,18 @@ while running:
         v2[1] *= -1
     if rect2.bottom > height:
         v2[1] *= -1
-   
+
+    if rect3.left < 0:
+        v3[0] *= -1
+    if rect3.right > width:
+        v3[0] *= -1
+    if rect3.top < 0:
+        v3[1] *= -1
+    if rect3.bottom > height:
+        v3[1] *= -1
     screen.fill((0, 0, 0))
+
+    pygame.draw.rect(screen, (0,255,0), rect3)
     pygame.draw.rect(screen, (0,0,255), rect)
 
     pygame.draw.rect(screen, (255,0,0), rect2)
