@@ -181,6 +181,7 @@ class LedSign():  # ! Should handle all pygame screen/event interactions
                 if i > 1:
                     pygame.draw.line(screen, (0, 0, 255),
                                      start, self.position + pose + cntrl_pnts[i - 1][1], 2)
+
     def clean(self):
         for symbol in self.symbols:
             pnts = symbol.get_control_points()[1:]
@@ -277,33 +278,36 @@ class LedSign():  # ! Should handle all pygame screen/event interactions
     def load(filename):
         cntrl_vectors = []
         led_cnts = []
+        poses = [] 
 
         # open file and read the content in a list
         with open(filename, 'r') as filehandle:
             for line in filehandle:
-                if "#" in line:
+                data = line.split()
+                if len(data) == 5:
+                    x1, y1, x2, y2, led_cnt = [int(i) for i in data]
+                    if any([v == -1 for v in [x1, y1, x2, y2, led_cnt]]):
+                        break
+                    led_cnts[-1].append(int(led_cnt))
+                    cntrl_vectors.append(pygame.math.Vector2(x1, y1))
+                    cntrl_vectors.append(pygame.math.Vector2(x2, y2))
+                elif len(data) == 2:
                     led_cnts.append([])
-                else:
-                    data = line.split()
-                    if len(data) == 5:
-                        x1, y1, x2, y2, led_cnt = [int(i) for i in data]
-                        if any([v == -1 for v in [x1, y1, x2, y2, led_cnt]]):
-                            break
-                        led_cnts[-1].append(int(led_cnt))
-                        cntrl_vectors.append(pygame.math.Vector2(x1, y1))
-                        cntrl_vectors.append(pygame.math.Vector2(x2, y2))
-                    elif len(data) == 2:
-                        pass
+                    x, y = [int(i) for i in data]
+                    poses.append(pygame.math.Vector2(x, y))
+                    pass
         temp = LedSign(led_cnts)
         for vector in cntrl_vectors:
             temp.setup(vector)
+        for pose, symbol in zip(poses, temp.symbols):
+            symbol.set_position(pose)
         assert(temp.initialized == True)
         return temp
 
     def save(self, filename):
         with open(filename, 'w') as filehandle:
             for symbol in self.symbols:
-                filehandle.write('#\n')
+                filehandle.write("{} {}\n".format(int(symbol.position.x),int(symbol.position.y)))
                 for strip in symbol.save():
                     start, end, cnt = strip
                     filehandle.write("{} {} {} {} {}\n".format(
@@ -332,8 +336,9 @@ class LedSign():  # ! Should handle all pygame screen/event interactions
         """
 
         if device_num != 3:
-            values = [ord('#'), device_num if device_num < 3 else device_num - 1, led_num, R, G, B]
-            
+            values = [ord('#'), device_num if device_num <
+                      3 else device_num - 1, led_num, R, G, B]
+
             if self.ser != None:
                 self.ser.write(bytearray(values))
             else:
