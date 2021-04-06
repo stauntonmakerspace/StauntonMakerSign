@@ -1,5 +1,5 @@
 #include <FastLED.h>
-#define NUM_LEDS 151
+#define NUM_LEDS 244
 
 #define DATA_PIN 3
 

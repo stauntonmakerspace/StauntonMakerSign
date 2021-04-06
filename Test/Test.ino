@@ -1,3 +1,5 @@
+// Flash RGB 
+
 byte cmd_buffer[6] = {'#', 0, 0, 255, 0, 0};
 byte reset_buffer[6] = {'#', 0, 255, 255, 0, 0};
 void setup()
@@ -6,9 +8,9 @@ void setup()
   Serial.begin(500000);
 }
 
-#define FRAME_RATE 24
+// #define FRAME_RATE 24
 #define DEVICE_CNT 10
-int cnts[DEVICE_CNT] = {100, 100, 100, 100, 100, 100, 100, 100, 100, 100};
+int cnts[DEVICE_CNT] = {244, 244, 244, 244, 244, 244, 244, 244, 244, 244};
 void loop()
 {
   // put your main code here, to run repeatedly:

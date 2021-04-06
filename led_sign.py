@@ -1,5 +1,5 @@
 import serial
-
+import time 
 import serial.tools.list_ports
 import pygame
 import pickle
@@ -124,6 +124,9 @@ class LedSign():  # ! Should handle all pygame screen/event interactions
                 break
         self.initialized = all([symbol.initialized for symbol in self.symbols])
 
+        if self.initialized:
+            self.sweep()
+
     def sample_screen(self, screen):
         for num, symbol in reversed(list(enumerate(self.symbols))):
             led_num = 0
@@ -199,7 +202,7 @@ class LedSign():  # ! Should handle all pygame screen/event interactions
                 strip.end_control -= MIN
                 strip.start_control -= MIN
 
-    def adjust_controls(self, vector=None):
+    def adjust_controls(self, vector = None):
         if vector == None:
             self.hold = [0, 0, 0, 0]
             return False
@@ -301,6 +304,26 @@ class LedSign():  # ! Should handle all pygame screen/event interactions
             symbol.set_position(pose)
         assert(temp.initialized == True)
         return temp
+    
+    def sweep(self):
+        for num, symbol in enumerate(self.symbols):
+            led = 1
+            for strip in symbol.strips:
+                for _ in range(strip.led_cnt):
+                    self.send_cmd(num, led, 255, 0, 0)
+                    self.send_cmd(num, led - 1, 0, 0, 0)
+                    self.send_cmd(num, 255, 0, 0, 0)
+                    time.sleep(1/60)
+                    led += 1
+        for num, symbol in reversed(list(enumerate(self.symbols))):
+            led = sum([strip.led_cnt for strip in symbol.strips]) - 1
+            for strip in symbol.strips:
+                for _ in range(strip.led_cnt):
+                    self.send_cmd(num, led, 0, 0, 0)
+                    self.send_cmd(num, led + 1, 255, 0, 0)
+                    self.send_cmd(num, 255, 0, 0, 0)
+                    time.sleep(1/60)
+                    led -= 1
 
     def save(self, filename):
         with open(filename, 'w') as filehandle:
