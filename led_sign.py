@@ -12,7 +12,6 @@ class SerialMock():
     def write(self, bytes):
         pass
 
-
 class LedStrip():
     def __init__(self, led_cnt, scale=4):
         self.initialized = False
@@ -55,7 +54,6 @@ class LedStrip():
 
     def get_control_points(self):
         return [self.start_control, self.end_control]
-
 
 class LedSymbol():
     def __init__(self, strip_lengths=None, position=None):
@@ -102,15 +100,14 @@ class LedSign():  # ! Should handle all pygame screen/event interactions
         self.symbol_history = []
 
         for cnts in led_cnts:
-            # , position = self.position))
             self.symbols.append(LedSymbol(cnts))
             self.symbol_history.append([(0, 0, 0), ] * sum(cnts))
 
         self.attach(serial_port)
 
-        self.hold = [0, 0, 0, 0]  # Dragging, Symbol_Num, Strip_Num, Is_Start
-        self.adjustable = True
-
+        self.holding = [0, 0, 0, 0]  # Dragging, Symbol_Num, Strip_Num, Is_Start
+        
+        self.adjustable = False
         self.initialized = False
 
     def set_position(self, position):
@@ -204,22 +201,22 @@ class LedSign():  # ! Should handle all pygame screen/event interactions
 
     def adjust_controls(self, vector = None):
         if vector == None:
-            self.hold = [0, 0, 0, 0]
+            self.holding = [0, 0, 0, 0]
             return False
-        if self.hold[0] == 1:  # Button Clicked
-            if self.hold[1] > 0:  # Dragging Symbol
-                if self.hold[2] > 0:  # Dragging Strip
-                    if self.hold[3] == 1:  # Dragging Start
-                        self.symbols[self.hold[1] - 1].strips[self.hold[2] - 1].move_start_control(
-                            vector - self.symbols[self.hold[1] - 1].position)
-                    elif self.hold[3] == 2:
-                        self.symbols[self.hold[1] - 1].strips[self.hold[2] - 1].move_end_control(
-                            vector - self.symbols[self.hold[1] - 1].position)
-                    elif self.hold[3] == 3:
-                        self.symbols[self.hold[1] - 1].strips[self.hold[2] - 1].move_controls(
-                            self.position - self.symbols[self.hold[1] - 1].position + vector)
+        if self.holding[0] == 1:  # Button Clicked
+            if self.holding[1] > 0:  # Dragging Symbol
+                if self.holding[2] > 0:  # Dragging Strip
+                    if self.holding[3] == 1:  # Dragging Start
+                        self.symbols[self.holding[1] - 1].strips[self.holding[2] - 1].move_start_control(
+                            vector - self.symbols[self.holding[1] - 1].position)
+                    elif self.holding[3] == 2:
+                        self.symbols[self.holding[1] - 1].strips[self.holding[2] - 1].move_end_control(
+                            vector - self.symbols[self.holding[1] - 1].position)
+                    elif self.holding[3] == 3:
+                        self.symbols[self.holding[1] - 1].strips[self.holding[2] - 1].move_controls(
+                            self.position - self.symbols[self.holding[1] - 1].position + vector)
                 else:
-                    self.symbols[self.hold[1] -
+                    self.symbols[self.holding[1] -
                                  1].set_position(self.position + vector)
             elif self.position.distance_to(vector) < 15:
                 self.position = vector
@@ -228,7 +225,7 @@ class LedSign():  # ! Should handle all pygame screen/event interactions
                 for num, symbol in enumerate(self.symbols):
                     cntrl_pnts = symbol.get_control_points()
                     if symbol.position.distance_to(vector) < 10:
-                        self.hold[1] = num + 1
+                        self.holding[1] = num + 1
                         return True
                     strip_num = 1
                     for start, end in cntrl_pnts[1:]:
@@ -236,21 +233,21 @@ class LedSign():  # ! Should handle all pygame screen/event interactions
                         end = end + self.position + symbol.position
                         mid = start - ((start - end) / 2)
                         if start.distance_to(vector) < 5:
-                            self.hold[1] = num + 1
-                            self.hold[2] = strip_num
-                            self.hold[3] = 1
+                            self.holding[1] = num + 1
+                            self.holding[2] = strip_num
+                            self.holding[3] = 1
                             return True
 
                         elif end.distance_to(vector) < 5:
-                            self.hold[1] = num + 1
-                            self.hold[2] = strip_num
-                            self.hold[3] = 2
+                            self.holding[1] = num + 1
+                            self.holding[2] = strip_num
+                            self.holding[3] = 2
                             return True
 
                         elif mid.distance_to(vector) < 5:
-                            self.hold[1] = num + 1
-                            self.hold[2] = strip_num
-                            self.hold[3] = 3
+                            self.holding[1] = num + 1
+                            self.holding[2] = strip_num
+                            self.holding[3] = 3
                             return True
                         strip_num += 1
                 return False
@@ -262,7 +259,7 @@ class LedSign():  # ! Should handle all pygame screen/event interactions
                     if event.button == 1:
                         mouse_x, mouse_y = event.pos
                         point = pygame.math.Vector2(mouse_x, mouse_y)
-                        self.hold = [1, 0, 0, 0]
+                        self.holding = [1, 0, 0, 0]
                         self.adjust_controls(point)
 
                 elif event.type == pygame.MOUSEMOTION:
@@ -322,7 +319,6 @@ class LedSign():  # ! Should handle all pygame screen/event interactions
                     self.send_cmd(num, led, 0, 0, 0)
                     self.send_cmd(num, led + 1, 255, 0, 0)
                     self.send_cmd(num, 255, 0, 0, 0)
-                    time.sleep(1/60)
                     led -= 1
 
     def save(self, filename):
@@ -343,6 +339,7 @@ class LedSign():  # ! Should handle all pygame screen/event interactions
                     if "COM" in p:
                         serial_port = p
             self.ser = serial.Serial(serial_port, 500000)
+            self.ser.write(1)
         except Exception as e:
             print(e)
             self.ser = None  # SerialMock()
