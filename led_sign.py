@@ -273,7 +273,7 @@ class LedSign():  # ! Should handle all pygame screen/event interactions
         self.sample_screen(screen)
 
     @staticmethod
-    def load(filename):
+    def load(filename,port=None):
         cntrl_vectors = []
         led_cnts = []
         poses = [] 
@@ -295,6 +295,8 @@ class LedSign():  # ! Should handle all pygame screen/event interactions
                     poses.append(pygame.math.Vector2(x, y))
                     pass
         temp = LedSign(led_cnts)
+        if port != None:
+            temp.attach(port)     
         for vector in cntrl_vectors:
             temp.setup(vector)
         for pose, symbol in zip(poses, temp.symbols):
