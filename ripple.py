@@ -20,7 +20,9 @@ previous = numpy.zeros(sim_size, numpy.float32)
 kernel = numpy.array([[0.0, .5, 0], 
                       [.5, 0, .5],
                      [0, .5, 0]])
-sign = LedSign.load("sign.txt","COM3")
+sign = LedSign.load("sign.txt")
+sign.attach("COM3")
+
 
 run = True
 while run:
