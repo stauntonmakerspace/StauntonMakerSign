@@ -305,23 +305,31 @@ class LedSign():  # ! Should handle all pygame screen/event interactions
         return temp
     
     def sweep(self):
+        colors = [(255,0,0), (0,255,0), (0,0,255)]
         for num, symbol in enumerate(self.symbols):
-            led = 1
-            for strip in symbol.strips:
-                for _ in range(strip.led_cnt):
-                    self.send_cmd(num, led, 255, 0, 0)
-                    self.send_cmd(num, led - 1, 0, 0, 0)
-                    self.send_cmd(num, 255, 0, 0, 0)
-                    time.sleep(1/60)
-                    led += 1
+            leds = sum([strip.led_cnt for strip in symbol.strips])
+            str_len = 3
+            for led in range(1, leds + 1):
+                self.send_cmd(num, led - 1, 0, 0, 0)
+                for color in colors:
+                    for _ in range(str_len):
+                        led = led + 1 if led + 1 < leds else led 
+                        self.send_cmd(num, led, *color)
+                self.send_cmd(num, 255, 0, 0, 0)
+                time.sleep(1/60)
+                pass
+    
         for num, symbol in reversed(list(enumerate(self.symbols))):
-            led = sum([strip.led_cnt for strip in symbol.strips]) - 1
+            led = sum([strip.led_cnt for strip in symbol.strips])
             for strip in symbol.strips:
                 for _ in range(strip.led_cnt):
-                    self.send_cmd(num, led, 0, 0, 0)
-                    self.send_cmd(num, led + 1, 255, 0, 0)
+                    self.send_cmd(num, led, 255, 255, 255)
+                    self.send_cmd(num, led + 1, 0, 0, 0)
                     self.send_cmd(num, 255, 0, 0, 0)
+                    time.sleep(1/120)
                     led -= 1
+            self.send_cmd(num, 1, 0, 0, 0)
+            self.send_cmd(num, 255, 0, 0, 0)
 
     def save(self, filename):
         with open(filename, 'w') as filehandle:
@@ -355,7 +363,7 @@ class LedSign():  # ! Should handle all pygame screen/event interactions
         4: Green color values 0 - 255
         6: Blue color values 0 - 255
         """
-
+        
         if device_num != 3:
             values = [ord('#'), device_num if device_num <
                       3 else device_num - 1, led_num, R, G, B]
@@ -366,3 +374,5 @@ class LedSign():  # ! Should handle all pygame screen/event interactions
                 pass
                 print("DEBUG: Device: {0} Led: {1} R: {2} G: {3} B: {4}".format(
                     device_num, led_num, R, G, B))
+if __name__ == '__main__':
+    LedSign.load("sign.txt","/dev/cu.usbserial-1410")
