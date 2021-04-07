@@ -27,8 +27,7 @@ running = True
 
 # sign.save("sign.txt")
 
-sign = LedSign.load("sign.txt")
-sign.attach("/dev/cu.usbserial-1410")
+sign = LedSign.load("sign.txt","COM3")
 
 sign.adjustable = True
 
@@ -84,7 +83,7 @@ while running:
         v3[1] *= -1
     if rect3.bottom > height:
         v3[1] *= -1
-    screen.fill((0, 200, 0))
+    screen.fill((0, 0, 0))
 
     pygame.draw.rect(screen, (0,255,0), rect3)
     pygame.draw.rect(screen, (0,0,255), rect)

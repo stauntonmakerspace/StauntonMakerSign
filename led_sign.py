@@ -121,8 +121,6 @@ class LedSign():  # ! Should handle all pygame screen/event interactions
                 break
         self.initialized = all([symbol.initialized for symbol in self.symbols])
 
-        if self.initialized:
-            self.sweep()
 
     def sample_screen(self, screen):
         for num, symbol in reversed(list(enumerate(self.symbols))):
@@ -350,6 +348,7 @@ class LedSign():  # ! Should handle all pygame screen/event interactions
                         serial_port = p
             self.ser = serial.Serial(serial_port, 500000)
             self.ser.write(1)
+            self.sweep()
         except Exception as e:
             print(e)
             self.ser = None  # SerialMock()
