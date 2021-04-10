@@ -25,7 +25,7 @@ def depth_frame_ready(frame):
         ksize = (5, 5)
         fg = backSub.apply(backtorgb)
         fg = cv2.blur(fg, ksize)
-        fg = cv2.resize(fg, FULL_WINSIZE[::-1]).astype("int32")
+        fg = cv2.resize(fg, FULL_WINSIZE[::-1], interpolation=cv2.INTER_NEAREST).astype("int32")
         fg_frame = fg
 
 def main():

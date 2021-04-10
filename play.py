@@ -32,7 +32,7 @@ while(cap.isOpened() and run):
                 if event.key == pygame.K_ESCAPE:
                     run = False
                     break
-        array = cv2.resize(frame, dsize=window_size[::-1], interpolation=cv2.INTER_CUBIC)
+        array = cv2.resize(frame, dsize=window_size[::-1], interpolation=cv2.INTER_NEAREST)
         pygame.surfarray.blit_array(window, array)
         sign.update(window, events)
         sign.draw(window)
