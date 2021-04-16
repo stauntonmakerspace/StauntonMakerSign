@@ -9,7 +9,7 @@ In order to use the kinect:
     Run the ```conda env create --file environment.yml``` command using the environment file provided
     An uininstall and reinstall of both pyserial and opencv-contrib may be required
     run ```conda activate sign```
-    run ```python run.py```
+    run ```python examples/kinect.py```
 
 ## Integration
 
@@ -24,12 +24,3 @@ In order to use the kinect:
 * Initialize an LED sign object with the config filename as the first argument and the Arduino port value as the second argument ```LedSign.load("sign.txt",'COM4')```
 * And every frame that you want the sign to respond call ```LedSign.update(screen: Pygame.surface, events: list<Pygame.events>)```
 * In order to show the ui call ```LedSign.draw(screen: Pygame.surface)```
-
-## Optimize 
-
-## Build test.py functionality in C++ (if necessary after testing)
-
-Testing is showing that a minimal delay is not necessary but it would be best in the future
-
-A 50 Microsecond delay between commands has shown to be the minimum delay to ensure commands are read properly
-From my reading python is unable to consistently delay to this precision
