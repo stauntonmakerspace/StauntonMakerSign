@@ -22,7 +22,6 @@ dependencies:
     - opencv-python==4.2.0.32
     - pygame==2.0.1
     - pykinect==2.1
-    - pykinect2==0.1.0
     - pyserial==3.5
     - pyyaml==5.4.1
     - serial==0.0.97
