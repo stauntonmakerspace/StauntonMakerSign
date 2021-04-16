@@ -12,6 +12,7 @@ In order to use the kinect:
     run ```python run.py```
 
 ## Integration
+
 * Flash the `Symbol.ino` Arduino code to every Arduino within the chain
 * Change the values within the config.py file to match the number of LED segments in each symbol
 * Running this will create a config file called the sign.txt this stores the position of every symbol you have in your sign
@@ -22,9 +23,6 @@ In order to use the kinect:
 * Initialize an LED sign object with the File name as the first argument and the Arduino port value as the second argument ```LedSign.load("sign.txt",'COM4')```
 * And every frame that you want the sign to respond call ```LedSign.update(screen: Pygame.surface, events: list<Pygame.events>)```
 * In order to show the ui call ```LedSign.draw(screen: Pygame.surface)```
-
-
-
 
 ## Optimize 
 
