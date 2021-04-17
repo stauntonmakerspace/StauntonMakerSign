@@ -383,14 +383,13 @@ class LedSign():  # ! Should handle all pygame screen/event interactions
             else:
                 self.record[-1].append([device_num, led_num, R, G, B])
         
-        if device_num != 3:
-            values = [ord('#'), device_num if device_num <
-                      3 else device_num - 1, led_num, R, G, B]
+       
+        values = [ord('#'), device_num, led_num, R, G, B]
 
-            if self.ser != None:
-                self.ser.write(bytearray(values))
-            else:
-                pass
-                #print("DEBUG: Device: {0} Led: {1} R: {2} G: {3} B: {4}".format(device_num, led_num, R, G, B))
+        if self.ser != None:
+            self.ser.write(bytearray(values))
+        else:
+            pass
+            #print("DEBUG: Device: {0} Led: {1} R: {2} G: {3} B: {4}".format(device_num, led_num, R, G, B))
 if __name__ == '__main__':
     LedSign.load("sign.txt","/dev/cu.usbserial-1410")
