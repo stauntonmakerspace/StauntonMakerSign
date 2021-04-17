@@ -30,17 +30,20 @@ while True:
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
                 break
-    ret, frame = cap.read() 
-    ret, frame = cap.read() 
-    if ret:
-        frame = cv2.resize(frame, dsize=window_size[::-1], interpolation=cv2.INTER_NEAREST)
-        pygame.surfarray.blit_array(window, frame)
-        frames.append(frame)
-        sign.update(window, events)
-        sign.draw(window)
-        pygame.display.flip()
-    else:
-        cap.release()
+    try:
+        ret, frame = cap.read() 
+        ret, frame = cap.read() 
+        if ret:
+            frame = cv2.resize(frame, dsize=window_size[::-1], interpolation=cv2.INTER_NEAREST)
+            pygame.surfarray.blit_array(window, frame)
+            frames.append(frame)
+            sign.update(window, events)
+            sign.draw(window)
+            pygame.display.flip()
+        else:
+            cap.release()
+            break
+    except Exception as e:
         break
 print("Playing Back")
 sign.recording = False
