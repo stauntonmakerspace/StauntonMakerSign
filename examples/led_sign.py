@@ -106,7 +106,8 @@ class LedSign():  # ! Should handle all pygame screen/event interactions
         self.attach(serial_port)
 
         self.holding = [0, 0, 0, 0]  # Dragging, Symbol_Num, Strip_Num, Is_Start
-        
+        self.recording = False
+        self.record = [[]]
         self.adjustable = False
         self.initialized = False
 
@@ -120,7 +121,6 @@ class LedSign():  # ! Should handle all pygame screen/event interactions
                 symbol.setup(vector)
                 break
         self.initialized = all([symbol.initialized for symbol in self.symbols])
-
 
     def sample_screen(self, screen):
         for num, symbol in reversed(list(enumerate(self.symbols))):
@@ -150,13 +150,15 @@ class LedSign():  # ! Should handle all pygame screen/event interactions
                 self.send_cmd(num, 255, 0, 0, 0)
 
     def draw(self, screen):
-        pygame.draw.circle(screen, (255, 100, 0),
-                           (self.position.x,  self.position.y), 10)
+        if self.adjustable:
+            pygame.draw.circle(screen, (255, 100, 0),
+                            (self.position.x,  self.position.y), 10)
         for num, symbol in enumerate(self.symbols):
             cntrl_pnts = symbol.get_control_points()
             pose = self.position + cntrl_pnts[0][0]
-            pygame.draw.circle(screen, (255, 100, 0),
-                               (pose.x,  pose.y), 10)
+            if self.adjustable:
+                pygame.draw.circle(screen, (255, 100, 0),
+                                (pose.x,  pose.y), 10)
             for i in range(1, len(cntrl_pnts)):
                 start, end = cntrl_pnts[i]
                 start = start + self.position + pose
@@ -165,15 +167,15 @@ class LedSign():  # ! Should handle all pygame screen/event interactions
 
                 pygame.draw.line(screen, (255, 0, 255),
                                  start, end, 6)
+                if self.adjustable:
+                    pygame.draw.circle(screen, (255, 255, 255),
+                                    (int(mid.x),  int(mid.y)), 4)
 
-                pygame.draw.circle(screen, (255, 255, 255),
-                                   (int(mid.x),  int(mid.y)), 4)
+                    pygame.draw.circle(screen, (0, 255, 0),
+                                    (start.x,  start.y), 4)
 
-                pygame.draw.circle(screen, (0, 255, 0),
-                                   (start.x,  start.y), 4)
-
-                pygame.draw.circle(screen, (255, 0, 0),
-                                   (end.x,  end.y), 4)
+                    pygame.draw.circle(screen, (255, 0, 0),
+                                    (end.x,  end.y), 4)
                 if i > 1:
                     pygame.draw.line(screen, (0, 0, 255),
                                      start, pose + cntrl_pnts[i - 1][1], 2)
@@ -352,6 +354,19 @@ class LedSign():  # ! Should handle all pygame screen/event interactions
         except Exception as e:
             print(e)
             self.ser = None  # SerialMock()
+    def start_recording(self):
+        pass
+    def stop_recording(self):
+        pass
+    def save_recording(self, filename):
+        pass
+    def load_recording(self, filename):
+        pass
+    def playback(self):
+        self.recording = False
+        for frame in self.record:
+            for cmd in frame:
+                self.send_cmd(*cmd)
 
     def send_cmd(self, device_num, led_num, R, G, B):
         """ cmd_bytearray
@@ -362,6 +377,11 @@ class LedSign():  # ! Should handle all pygame screen/event interactions
         4: Green color values 0 - 255
         6: Blue color values 0 - 255
         """
+        if self.recording:
+            if device_num == 0 and led_num == 255: # End of Frame
+                self.record.append([])
+            else:
+                self.record[-1].append([device_num, led_num, R, G, B])
         
         if device_num != 3:
             values = [ord('#'), device_num if device_num <
@@ -371,7 +391,6 @@ class LedSign():  # ! Should handle all pygame screen/event interactions
                 self.ser.write(bytearray(values))
             else:
                 pass
-                print("DEBUG: Device: {0} Led: {1} R: {2} G: {3} B: {4}".format(
-                    device_num, led_num, R, G, B))
+                #print("DEBUG: Device: {0} Led: {1} R: {2} G: {3} B: {4}".format(device_num, led_num, R, G, B))
 if __name__ == '__main__':
     LedSign.load("sign.txt","/dev/cu.usbserial-1410")
