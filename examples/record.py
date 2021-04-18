@@ -73,7 +73,8 @@ sign.recording = False
 sign.adjustable = False
 frame_data = zip(sign.record, frames)
 while run == True:
-    events = pygame.event.get()
+    for cmd_data, frame in frame_data:
+        events = pygame.event.get()
     for event in events:
         if event.type == pygame.QUIT:   
             run = False
@@ -82,7 +83,6 @@ while run == True:
             if event.key == pygame.K_ESCAPE:
                 run = False
                 break
-    for cmd_data, frame in frame_data:
         clock.tick(60)
         for cmd in cmd_data:
             sign.send_cmd(*cmd)
