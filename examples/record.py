@@ -83,10 +83,10 @@ while run == True:
             if event.key == pygame.K_ESCAPE:
                 run = False
                 break
-        clock.tick(60)
-        for cmd in cmd_data:
-            sign.send_cmd(*cmd)
-            # time.sleep(5e-5) # 50 MicroSeconds  
-        pygame.surfarray.blit_array(window, frame)
-        sign.draw(window)
-        pygame.display.flip()
+    clock.tick(60)
+    for cmd in cmd_data:
+        sign.send_cmd(*cmd)
+        # time.sleep(5e-5) # 50 MicroSeconds  
+    pygame.surfarray.blit_array(window, frame)
+    sign.draw(window)
+    pygame.display.flip()
