@@ -378,10 +378,9 @@ class LedSign():  # ! Should handle all pygame screen/event interactions
         6: Blue color values 0 - 255
         """
         if self.recording:
+            self.record[-1].append([device_num, led_num, R, G, B])
             if device_num == 0 and led_num == 255: # End of Frame
-                self.record.append([])
-            else:
-                self.record[-1].append([device_num, led_num, R, G, B])
+                self.record.append([])                
         
        
         values = [ord('#'), device_num, led_num, R, G, B]
