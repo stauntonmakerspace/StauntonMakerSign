@@ -71,22 +71,22 @@ while run and ret:
 print("Playing Back")
 sign.recording = False
 sign.adjustable = False
-frame_data = zip(sign.record, frames)
+frame_data = list(zip(sign.record, frames))
 while run == True:
     for cmd_data, frame in frame_data:
+        clock.tick(60)
+        for cmd in cmd_data:
+            sign.send_cmd(*cmd)
+            # time.sleep(5e-5) # 50 MicroSeconds  
+        pygame.surfarray.blit_array(window, frame)
+        sign.draw(window)
+        pygame.display.flip()
         events = pygame.event.get()
-    for event in events:
-        if event.type == pygame.QUIT:   
-            run = False
-            break
-        elif event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_ESCAPE:
+        for event in events:
+            if event.type == pygame.QUIT:   
                 run = False
-                break
-    clock.tick(60)
-    for cmd in cmd_data:
-        sign.send_cmd(*cmd)
-        # time.sleep(5e-5) # 50 MicroSeconds  
-    pygame.surfarray.blit_array(window, frame)
-    sign.draw(window)
-    pygame.display.flip()
+                
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    run = False
+                    

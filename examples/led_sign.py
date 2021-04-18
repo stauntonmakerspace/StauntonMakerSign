@@ -176,7 +176,7 @@ class LedSign():  # ! Should handle all pygame screen/event interactions
 
                     pygame.draw.circle(screen, (255, 0, 0),
                                     (end.x,  end.y), 4)
-                if i > 1:
+                if i >= 1:
                     pygame.draw.line(screen, (0, 0, 255),
                                      start, pose + cntrl_pnts[i - 1][1], 2)
 
