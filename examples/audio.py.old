@@ -1,0 +1,64 @@
+# Print out realtime audio volume as ascii bars
+
+import sounddevice as sd
+import numpy as np
+from led_sign import LedSign
+import pygame
+
+FPS = 24
+pygame.init()
+
+screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+width, height = pygame.display.get_surface().get_size()
+pygame.display.set_caption("MakerSign Recording System")
+
+clock = pygame.time.Clock()
+
+running = True
+
+sign = LedSign.load("sign.txt")
+sign.attach("COM3")
+
+sign.adjustable = True
+samples = 512
+data = range(samples)
+viz = [pygame.rect.Rect(i * 10, 0, 10, 20) for i in range(samples)]
+
+def print_sound(indata, frames, time, status):
+    global data
+    volume_norm = np.linalg.norm(indata) * 10e3
+    data = indata * volume_norm
+
+with sd.InputStream(device=0, channels=1, callback=print_sound):
+    while running:
+        events = pygame.event.get()
+        for event in events:
+            if event.type == pygame.KEYDOWN:
+                
+                if event.key == pygame.K_DOWN:
+                    pass
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_UP:
+                    sign.clean()
+            if event.type == pygame.QUIT:
+                running = False
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    running = False
+                    break
+        screen.fill((0, 0, 0))
+        for i, rect in enumerate(viz):
+            rect.h = int(data[i])
+            pygame.draw.rect(screen, (0,255,0), rect)
+
+        sign.update(screen, events)
+        sign.draw(screen)
+         # - constant game speed / FPS -
+        # clock.tick(FPS)
+
+        pygame.display.update()
+
+        
+# sd.sleep(10000)
+
+   
