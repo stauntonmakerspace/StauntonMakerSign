@@ -2,7 +2,7 @@ import numpy
 import pygame
 import scipy
 import scipy.ndimage
-from led_sign import LedSign
+from makersign import LedSign
 import cv2
 
 pygame.init()
@@ -22,7 +22,6 @@ kernel = numpy.array([[0.0, .5, 0],
                      [0, .5, 0]])
 sign = LedSign.load("sign.txt")
 sign.attach("COM3")
-
 
 run = True
 while run:

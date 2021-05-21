@@ -2,7 +2,7 @@ import numpy as np
 import cv2
 import numpy
 import pygame
-from led_sign import LedSign
+from makersign import LedSign
 import cv2
 import time
 cap = cv2.VideoCapture('rainbow.mp4')

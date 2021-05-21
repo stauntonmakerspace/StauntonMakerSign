@@ -1,9 +1,7 @@
 import serial
-import time 
+import time
 import serial.tools.list_ports
 import pygame
-import pickle
-
 
 class SerialMock():
     def __init__(self):

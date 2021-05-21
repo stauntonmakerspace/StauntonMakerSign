@@ -2,7 +2,7 @@
 
 import sounddevice as sd
 import numpy as np
-from led_sign import LedSign
+from makersign import LedSign
 import pygame
 from colour import Color
 
