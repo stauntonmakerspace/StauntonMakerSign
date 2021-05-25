@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name='makersign',
-      version='0.1',
+      version='0.2',
       description='The funniest joke in the world',
       url='https://github.com/stauntonmakerspace/StauntonMakerSign',
       author='Nile Walker',

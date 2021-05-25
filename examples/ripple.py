@@ -25,7 +25,7 @@ sign.attach("COM3")
 
 run = True
 while run:
-    clock.tick(24)
+    clock.tick(60)
     events = pygame.event.get()
     for event in events:
         if event.type == pygame.QUIT:
