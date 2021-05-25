@@ -196,30 +196,26 @@ class LedSign():  # ! Should handle all pygame screen/event interactions
                 strip.start_control -= MIN
 
     def adjust_controls(self, vector = None):
-        if vector == None:
-            self.hold_state = [0, 0, 0, 0]
-            self.holding = False
-            return False
         if self.holding:
-            if self.hold_state[0] == 1:  # Button Clicked
+            if self.hold_state[0] == 1:  # Sign Control Clicked
                 self.position = vector
-                return True
-            elif self.hold_state[1] > 0:  # Dragging Symbol
-                if self.hold_state[2] > 0:  # Dragging Strip
+            elif self.hold_state[1] > 0:  # Symbol Control Clicked
+                if self.hold_state[2] > 0:  # Strip Control Clicked
                     if self.hold_state[3] == 1:  # Dragging Start
                         self.symbols[self.hold_state[1] - 1].strips[self.hold_state[2] - 1].move_start_control(
-                            vector - self.symbols[self.hold_state[1] - 1].position)
+                            vector - self.symbols[self.hold_state[1] - 1].position - self.position)
                     elif self.hold_state[3] == 2:
                         self.symbols[self.hold_state[1] - 1].strips[self.hold_state[2] - 1].move_end_control(
-                            vector - self.symbols[self.hold_state[1] - 1].position)
+                            vector - self.symbols[self.hold_state[1] - 1].position - self.position)
                     elif self.hold_state[3] == 3:
                         self.symbols[self.hold_state[1] - 1].strips[self.hold_state[2] - 1].shift_controls(
-                            self.position - self.symbols[self.hold_state[1] - 1].position + vector)
+                            vector - self.symbols[self.hold_state[1] - 1].position - self.position)
                 else:
                     self.symbols[self.hold_state[1] -
-                                    1].set_position(self.position + vector)
+                                    1].set_position(vector - self.position)
                 return True
         else:
+            self.hold_state = [0, 0, 0, 0]
             # Determine which control to consider held
             if self.position.distance_to(vector) < 15:
                 self.hold_state[0] = 1
@@ -227,7 +223,7 @@ class LedSign():  # ! Should handle all pygame screen/event interactions
 
             for symbol_num, symbol in enumerate(self.symbols):
 
-                if symbol.position.distance_to(vector) < 10:
+                if (self.position + symbol.position).distance_to(vector) < 10:
                     self.hold_state[1] = symbol_num + 1
                     return True
 
@@ -274,7 +270,7 @@ class LedSign():  # ! Should handle all pygame screen/event interactions
                     self.adjust_controls(point)
 
                 elif event.type == pygame.MOUSEBUTTONUP:
-                    self.adjust_controls(None)
+                    self.holding = False
 
         self.sample_screen(screen)
 
