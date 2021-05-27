@@ -1,16 +1,7 @@
 # LED SIGN
 
 ## Setup
-
-In order to use the kinect:
-    Install Anaconda **32 Bit** 
-    Install the Microsoft kinect 1.8 SDK and Toolkit
-    Open the Anaconda prompt
-    Run the ```conda env create --file environment.yml``` command using the environment file provided
-    An uininstall and reinstall of both pyserial and opencv-contrib may be required
-    run ```conda activate sign```
-    run ```python examples/kinect.py```
-
+``` pip install makersign```
 ## Integration
 
 * Flash the `Symbol.ino` Arduino code to every Arduino within the chain
@@ -22,5 +13,5 @@ In order to use the kinect:
 
 * In order to use this code with another game create a pygame game
 * Initialize an LED sign object with the config filename as the first argument and the Arduino port value as the second argument ```LedSign.load("sign.txt",'COM4')```
-* And every frame that you want the sign to respond call ```LedSign.update(screen: Pygame.surface, events: list<Pygame.events>)```
+* And every frame that you want the sign to respond call ```LedSign.update(screen: Pygame.surface, events: list[Pygame.events])```
 * In order to show the ui call ```LedSign.draw(screen: Pygame.surface)```

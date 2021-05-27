@@ -4,7 +4,7 @@ import pygame
 FPS = 24
 pygame.init()
 
-screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+screen = pygame.display.set_mode((1400, 900))
 width, height = pygame.display.get_surface().get_size()
 pygame.display.set_caption("MakerSign Drawing System")
 
