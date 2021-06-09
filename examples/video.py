@@ -15,7 +15,7 @@ clock = pygame.time.Clock()
 window_size = window.get_size()
 
 sign = LedSign.load("sign.txt")
-sign.attach("COM3")
+sign.attach("/dev/ttyUSB0")
 
 sign.adjustable = True
 
