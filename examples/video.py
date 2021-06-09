@@ -9,7 +9,7 @@ cap = cv2.VideoCapture('water.mp4')
 
 pygame.init()
 
-window = pygame.display.set_mode((0, 0),pygame.FULLSCREEN)
+window = pygame.display.set_mode((1400, 900))
 clock = pygame.time.Clock()
 
 window_size = window.get_size()
