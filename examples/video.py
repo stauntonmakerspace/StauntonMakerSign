@@ -5,14 +5,13 @@ import pygame
 from makersign import LedSign
 import cv2
 import time
-cap = cv2.VideoCapture('water.mp4')
+cap = cv2.VideoCapture('swirl.mp4')
 
 pygame.init()
 
-window = pygame.display.set_mode((0, 0),pygame.FULLSCREEN)
-clock = pygame.time.Clock()
-
+window = pygame.display.set_mode((1400, 900))
 window_size = window.get_size()
+clock = pygame.time.Clock()
 
 sign = LedSign.load("sign.txt")
 sign.attach("/dev/ttyUSB0")
@@ -45,13 +44,14 @@ while (run and ret) and not start:
                 frame = cv2.cvtColor(frame,cv2.COLOR_RGB2BGR)
                 frame -= frame % 100
                 frames.append(frame)
-                pygame.surfarray.blit_array(window, frame)
             else:
                 start = True 
-
+        
+        pygame.surfarray.blit_array(window, frames[-1])
         if record and ret:
             updates.append(sign.update(window, events, return_changes=True))
         else:
+            
             sign.update(window, events)
         sign.draw(window)
         pygame.display.flip()
