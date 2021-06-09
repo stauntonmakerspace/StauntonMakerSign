@@ -90,7 +90,7 @@ class LedSign():  # ! Should handle all pygame screen/event interactions
     def __init__(self, led_cnts, serial_port=None, position=None):
         self.position = position if position != None else pygame.math.Vector2(
             0, 0)
-
+        self.frame_updates = []
         self.symbols = []
         # Store the last record values in order to prevent sending duplicates unnecessrily
         self.symbol_history = []
@@ -118,7 +118,9 @@ class LedSign():  # ! Should handle all pygame screen/event interactions
                 break
         self.initialized = all([symbol.initialized for symbol in self.symbols])
 
-    def sample_screen(self, screen):
+    def sample_screen(self, screen, return_changes):
+        if return_changes:
+            changes = []
         for num, symbol in reversed(list(enumerate(self.symbols))):
             led_num = 0
             updated = False
@@ -143,8 +145,11 @@ class LedSign():  # ! Should handle all pygame screen/event interactions
                     led_num += 1
 
             if updated:
+                if return_changes:
+                    changes.append([num, 255, 0, 0, 0])
                 self.send_cmd(num, 255, 0, 0, 0)
-
+        if return_changes:
+            return changes
     def draw(self, screen):
         if self.adjustable:
             pygame.draw.circle(screen, (255, 100, 0),
@@ -254,7 +259,7 @@ class LedSign():  # ! Should handle all pygame screen/event interactions
                         return True
         return False
 
-    def update(self, screen, events =[]):
+    def update(self, screen, events = [], return_changes = False):
         if self.adjustable:
             for event in events:
                 if event.type == pygame.MOUSEBUTTONDOWN:
@@ -272,7 +277,9 @@ class LedSign():  # ! Should handle all pygame screen/event interactions
                 elif event.type == pygame.MOUSEBUTTONUP:
                     self.holding = False
 
-        self.sample_screen(screen)
+        changes = self.sample_screen(screen, return_changes)
+        if return_changes:
+            return changes
 
     @staticmethod
     def load(filename, port=None):
@@ -365,7 +372,6 @@ class LedSign():  # ! Should handle all pygame screen/event interactions
         4: Green color values 0 - 255
         6: Blue color values 0 - 255
         """
-                
         values = [ord('#'), device_num, led_num, R, G, B]
         self.ser.write(bytearray(values))
  
