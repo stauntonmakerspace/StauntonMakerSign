@@ -1,5 +1,6 @@
 from makersign import LedSign
 import pygame
+import pygame_gui
 
 FPS = 24
 pygame.init()
@@ -73,7 +74,6 @@ while running:
 
     pygame.draw.rect(screen, (0,255,0), rect3)
     pygame.draw.rect(screen, (0,0,255), rect)
-
     pygame.draw.rect(screen, (255,0,0), rect2)
 
     sign.update(screen, events)

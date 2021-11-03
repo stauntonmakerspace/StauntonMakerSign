@@ -10,7 +10,6 @@ class SerialMock():
     def write(self, _bytes):
         print(_bytes)
 
-
 class LedStrip():
     def __init__(self, led_cnt, scale=4):
         self.initialized = False
@@ -34,25 +33,28 @@ class LedStrip():
         else:
             return pygame.math.Vector2(0, 0), pygame.math.Vector2(1, 1), self.led_cnt
 
-    def shift_controls(self, vector):
+    def shift_controls(self, mouse_vector):
         mid = self.start_control - \
             ((self.start_control - self.end_control) / 2)
-        diff = vector - mid
+        diff = mouse_vector - mid
         self.start_control += diff
         self.end_control += diff
 
-    def move_end_control(self, vector):
+    def move_end_control(self, mouse_vector):
         self.end_control = self.start_control - \
-            ((self.start_control - vector).normalize()
+            ((self.start_control - mouse_vector).normalize()
              * self.led_cnt * self.scale)
 
-    def move_start_control(self, vector):
+    def move_start_control(self, mouse_vector):
         self.start_control = self.end_control - \
-            ((self.end_control - vector).normalize()
+            ((self.end_control - mouse_vector).normalize()
              * self.led_cnt * self.scale)
 
     def get_control_points(self):
         return [self.start_control, self.end_control]
+    
+    def process_events(self, event):
+        pass 
 
 class LedSymbol():
     def __init__(self, strip_lengths=None, position=None):
@@ -65,6 +67,7 @@ class LedSymbol():
 
         self.initialized = False
 
+    # TODO: Somethings wrong with this set up function it doesnt work in a nice way idk what it is yet 
     def setup(self, vector):
         strip = None
         for strip in self.strips:
@@ -85,6 +88,8 @@ class LedSymbol():
     def get_control_points(self):
         return [strip.get_control_points() for strip in self.strips]
 
+    def process_events(self, event):
+        pass 
 
 class LedSign():  # ! Should handle all pygame screen/event interactions
     def __init__(self, led_cnts, serial_port=None, position=None):
@@ -109,7 +114,7 @@ class LedSign():  # ! Should handle all pygame screen/event interactions
 
     def set_position(self, position):
         self.position = position
-
+    
     def setup(self, vector):
         symbol = None
         for symbol in self.symbols:
@@ -152,6 +157,7 @@ class LedSign():  # ! Should handle all pygame screen/event interactions
                 self.send_cmd(num, 255, 0, 0, 0)
         if return_changes:
             return changes
+    
     def draw(self, screen):
         if self.adjustable:
             pygame.draw.circle(screen, (255, 100, 0),
@@ -261,6 +267,9 @@ class LedSign():  # ! Should handle all pygame screen/event interactions
                         return True
         return False
 
+    def process_events(self, event):
+        pass 
+    
     def update(self, screen, events = [], return_changes = False):
         if self.adjustable:
             for event in events:
