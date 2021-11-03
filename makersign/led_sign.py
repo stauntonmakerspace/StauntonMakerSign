@@ -123,9 +123,8 @@ class LedSign():  # ! Should handle all pygame screen/event interactions
                 break
         self.initialized = all([symbol.initialized for symbol in self.symbols])
 
-    def sample_screen(self, screen, return_changes):
-        if return_changes:
-            changes = []
+    def sample_surface(self, screen, return_only = False):
+        changes = []
         for num, symbol in reversed(list(enumerate(self.symbols))):
             led_num = 0
             updated = False
@@ -146,17 +145,16 @@ class LedSign():  # ! Should handle all pygame screen/event interactions
                     if sample != self.symbol_history[num][led_num]:
                         self.symbol_history[num][led_num] = sample
                         updated = True
-                        if return_changes:
-                            changes.append([num, led_num, sample[0], sample[1], sample[2]])
-                        self.send_cmd(num, led_num, *sample)
+                        changes.append([num, led_num, sample[0], sample[1], sample[2]])
+                        if not return_only:
+                            self.send_cmd(num, led_num, *sample)
                     led_num += 1
 
             if updated:
-                if return_changes:
-                    changes.append([num, 255, 0, 0, 0])
-                self.send_cmd(num, 255, 0, 0, 0)
-        if return_changes:
-            return changes
+                changes.append([num, 255, 0, 0, 0])
+                if not return_only:
+                    self.send_cmd(num, 255, 0, 0, 0)
+        return changes
     
     def draw(self, screen):
         if self.adjustable:
@@ -268,29 +266,20 @@ class LedSign():  # ! Should handle all pygame screen/event interactions
         return False
 
     def process_events(self, event):
-        pass 
-    
-    def update(self, screen, events = [], return_changes = False):
-        if self.adjustable:
-            for event in events:
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    if event.button == 1:
-                        mouse_x, mouse_y = event.pos
-                        point = pygame.math.Vector2(mouse_x, mouse_y)
-                        self.adjust_controls(point)
-                        self.holding = True
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if event.button == 1:
+                mouse_x, mouse_y = event.pos
+                point = pygame.math.Vector2(mouse_x, mouse_y)
+                self.adjust_controls(point)
+                self.holding = True
 
-                elif event.type == pygame.MOUSEMOTION:
-                    mouse_x, mouse_y = event.pos
-                    point = pygame.math.Vector2(mouse_x, mouse_y)
-                    self.adjust_controls(point)
+        elif event.type == pygame.MOUSEMOTION:
+            mouse_x, mouse_y = event.pos
+            point = pygame.math.Vector2(mouse_x, mouse_y)
+            self.adjust_controls(point)
 
-                elif event.type == pygame.MOUSEBUTTONUP:
-                    self.holding = False
-
-        changes = self.sample_screen(screen, return_changes)
-        if return_changes:
-            return changes
+        elif event.type == pygame.MOUSEBUTTONUP:
+            self.holding = False 
 
     @staticmethod
     def load(filename, port=None):
@@ -323,33 +312,6 @@ class LedSign():  # ! Should handle all pygame screen/event interactions
             symbol.set_position(pose)
         assert(temp.initialized == True)
         return temp
-    
-    def sweep(self):
-        colors = [(255,0,0), (0,255,0), (0,0,255)]
-        for num, symbol in enumerate(self.symbols):
-            leds = sum([strip.led_cnt for strip in symbol.strips])
-            str_len = 3
-            for led in range(1, leds + 1):
-                self.send_cmd(num, led - 1, 0, 0, 0)
-                for color in colors:
-                    for _ in range(str_len):
-                        led = led + 1 if led + 1 < leds else led 
-                        self.send_cmd(num, led, *color)
-                self.send_cmd(num, 255, 0, 0, 0)
-                time.sleep(1/60)
-                pass
-    
-        for num, symbol in reversed(list(enumerate(self.symbols))):
-            led = sum([strip.led_cnt for strip in symbol.strips])
-            for strip in symbol.strips:
-                for _ in range(strip.led_cnt):
-                    self.send_cmd(num, led, 255, 255, 255)
-                    self.send_cmd(num, led + 1, 0, 0, 0)
-                    self.send_cmd(num, 255, 0, 0, 0)
-                    time.sleep(1/120)
-                    led -= 1
-            self.send_cmd(num, 1, 0, 0, 0)
-            self.send_cmd(num, 255, 0, 0, 0)
 
     def save(self, filename):
         with open(filename, 'w') as filehandle:
@@ -369,7 +331,6 @@ class LedSign():  # ! Should handle all pygame screen/event interactions
                     if "COM" in p:
                         serial_port = p
             self.ser = serial.Serial(serial_port, 500000)
-            self.sweep()
         except Exception as e:
             print(e)
             self.ser = SerialMock()
