@@ -7,10 +7,10 @@ from makersign import LedSign
 pygame.init()
 
 pygame.display.set_caption('Quick Start')
-window_surface = pygame.display.set_mode((1400, 900))
+window_surface = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 window_size = window_surface.get_size()
 
-manager = pygame_gui.UIManager((1400, 900))
+manager = pygame_gui.UIManager(window_size)
 
 prev_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((350, 475), (100, 50)),
                                             text='Prev',
