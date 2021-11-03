@@ -64,7 +64,7 @@ while is_running:
     ret, frame = video_handle.read() 
     frame_index += 1
     if ret and loaded:
-        frame = cv2.rotate(frame, cv2.cv2.ROTATE_90_COUNTERCLOCKWISE)
+        frame = cv2.rotate(frame, cv2.ROTATE_90_COUNTERCLOCKWISE)
         frame = cv2.resize(frame, dsize=window_size[::-1], interpolation=cv2.INTER_NEAREST)
         # frame = cv2.cvtColor(frame,cv2.COLOR_RGB2BGR)
         # TODO: Delegate color space limiting to the LedSign object it makes more sense and limits unnecessary computation
