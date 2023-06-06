@@ -15,3 +15,5 @@
 * Initialize an LED sign object with the config filename as the first argument and the Arduino port value as the second argument ```LedSign.load("sign.txt",'COM4')```
 * And every frame that you want the sign to respond call ```LedSign.update(screen: Pygame.surface, events: list[Pygame.events])```
 * In order to show the ui call ```LedSign.draw(screen: Pygame.surface)```
+
+* Waverly Was Here
