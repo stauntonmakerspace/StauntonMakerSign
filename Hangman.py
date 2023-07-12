@@ -97,7 +97,7 @@ while running:
     a += 1
     #pygame.draw.rect(screen, "black", rect=(0,0,1536,960/3+50))
     screen.fill("black", rect=(0, 0, 1536,960/3+50))
-    pygame.draw.rect(color="red", surface=screen, rect=(40, 160, 1350 - (135 * lives), 200))
+    screen.fill(color="red", rect=(40, 160, 1350 - (135 * lives), 200))
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
