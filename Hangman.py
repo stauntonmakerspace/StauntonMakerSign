@@ -76,7 +76,8 @@ def read_guesses():
                                     screen.blit(text, (lines[line].centerx, lines[line].y - 50))
                     elif not gc:
                         lives -= 1
-                    return str(guess_list)
+                        pygame.draw.rect(color="red", surface=screen, rect=(40, 160, 1350-(135*lives), 200))
+            return str(guess_list)
 
 
 def guess_correct(guess, correct_list):
@@ -117,6 +118,8 @@ while running:
         font = pygame.font.SysFont("arial", size=50)
         text = font.render("{}".format(f"You ran out of lives!"), True, "RED")
         screen.blit(text, (1536/3, 960/2))
+    sign.sample_surface(screen)
+    sign.draw(screen)
 
 
 
