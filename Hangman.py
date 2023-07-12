@@ -5,6 +5,7 @@ from makersign import LedSign
 pygame.display.set_caption('Quick Start')
 screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 window_size = screen.get_size()
+screen.fill("black")
 
 window_width = screen.get_width()
 window_height = screen.get_height()
@@ -94,7 +95,6 @@ clock = pygame.time.Clock()
 while running:
     clock.tick(60)
     a += 1
-    screen.fill = "black"
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
