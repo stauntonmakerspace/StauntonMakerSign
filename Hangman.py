@@ -77,7 +77,7 @@ def read_guesses():
                                     screen.blit(text, (lines[line].centerx, lines[line].y - 50))
                     elif not gc:
                         lives -= 1
-                        pygame.draw.rect(color="red", surface=screen, rect=(40, 160, 1350-(135*lives), 200))
+
             return str(guess_list)
 
 
@@ -95,6 +95,9 @@ clock = pygame.time.Clock()
 while running:
     clock.tick(60)
     a += 1
+    #pygame.draw.rect(screen, "black", rect=(0,0,1536,960/3+50))
+    screen.fill("black", rect=(0, 0, 1536,960/3+50))
+    pygame.draw.rect(color="red", surface=screen, rect=(40, 160, 1350 - (135 * lives), 200))
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
