@@ -16,4 +16,4 @@
 * And every frame that you want the sign to respond call ```LedSign.update(screen: Pygame.surface, events: list[Pygame.events])```
 * In order to show the ui call ```LedSign.draw(screen: Pygame.surface)```
 
-* Bacon Was Here
+* Bacon Was Here 
