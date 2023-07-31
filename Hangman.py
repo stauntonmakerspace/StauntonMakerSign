@@ -133,9 +133,9 @@ while running:
             if winStart:
                 pygame.draw.rect(screen, winClr, rect=winBar)
                 winStart = False
-            if winClr == "blue" and a % 5 == 0:
+            if winClr == "blue" and a % 9 == 0:
                 winClr = "green"
-            elif winClr == "green" and a % 5 == 0:
+            elif winClr == "green" and a % 30 == 0:
                 winClr = "blue"
             pygame.draw.rect(screen, winClr, rect=winBar)
 
