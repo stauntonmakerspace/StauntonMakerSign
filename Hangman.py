@@ -24,7 +24,6 @@ lives = 10
 deathColor = "red"
 winStart = True
 sStart = False
-dx = 5
 winClr = "blue"
 winBar = (40, 160, 1340, 200)
 
@@ -117,7 +116,7 @@ while running:
     clock.tick(60)
     a += 1
     if not sStart:
-        screen.fill("black", rect=(0, 0, 1536,960/3+50))
+        screen.fill("black", rect=(0, 0, 1536, 960/3+50))
         sStart = True
     deathBar = screen.fill(color="red", rect=(40, 160, 1350 - (135 * lives), 200))
     for event in pygame.event.get():
@@ -142,8 +141,6 @@ while running:
 
         else:
             guesses = read_guesses()
-
-
     if lives == 0:
         for line in range(len(lines)):
             for s in range(len(word)):
@@ -157,7 +154,5 @@ while running:
         screen.blit(text, (1536/3, 960/2))
     sign.sample_surface(screen)
     sign.draw(screen)
-
-
 
     pygame.display.flip()
