@@ -18,13 +18,21 @@ keys = [pygame.K_q, pygame.K_w, pygame.K_e, pygame.K_r, pygame.K_t, pygame.K_y, 
         pygame.K_EXCLAIM, pygame.K_SPACE]
 lines = []
 correct = ""
+LetterList = ""
 lives = 10
+deathColor = "red"
+winStart = True
+sStart = False
+dx = 5
+winClr = "blue"
+winBar = (40, 160, 1340, 200)
 
 sign = LedSign.load("sign.txt")
 sign.attach("/dev/ttyUSB0")
 
 
 def set_word():
+    global LetterList
     string = ""
     pygame.font.init()
     done = False
@@ -36,6 +44,9 @@ def set_word():
                         string += str(ev.unicode)
                 if ev.key == pygame.K_ESCAPE:
                     done = True
+    for i in string:
+        if i not in LetterList:
+            LetterList += i
     return string
 
 
@@ -67,7 +78,7 @@ def read_guesses():
             if ev.type == pygame.KEYDOWN:
                 if ev.key in keys:
                     guess_list += str(ev.unicode)
-                    gc = guess_correct(ev.unicode, correct)
+                    gc = guess_correct(ev.unicode)
                     if gc != False:
                         for line in range(len(lines)):
                             for s in range(len(word)):
@@ -77,13 +88,22 @@ def read_guesses():
                                     screen.blit(text, (lines[line].centerx, lines[line].y - 50))
                     elif not gc:
                         lives -= 1
-
             return str(guess_list)
 
 
-def guess_correct(guess, correct_list):
+def guess_correct(guess):
+    global correct
     if guess in word:
-        correct_list += str(guess)
+        correct += str(guess)
+    else:
+        return False
+
+
+def check_win():
+    global LetterList
+    global correct
+    if len(LetterList) == len(correct):
+        return True
     else:
         return False
 
@@ -95,9 +115,10 @@ clock = pygame.time.Clock()
 while running:
     clock.tick(60)
     a += 1
-    #pygame.draw.rect(screen, "black", rect=(0,0,1536,960/3+50))
-    screen.fill("black", rect=(0, 0, 1536,960/3+50))
-    screen.fill(color="red", rect=(40, 160, 1350 - (135 * lives), 200))
+    if not sStart:
+        screen.fill("black", rect=(0, 0, 1536,960/3+50))
+        sStart = True
+    deathBar = screen.fill(color="red", rect=(40, 160, 1350 - (135 * lives), 200))
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -108,7 +129,18 @@ while running:
         draw_word(word)
         word_set = True
     elif word_set:
-        guesses = read_guesses()
+        if check_win():
+            if winStart:
+                pygame.draw.rect(screen, winClr, rect=winBar)
+                winStart = False
+            if winClr == "blue" and a % 5 == 0:
+                winClr = "green"
+            elif winClr == "green" and a % 5 == 0:
+                winClr = "blue"
+            pygame.draw.rect(screen, winClr, rect=winBar)
+
+        else:
+            guesses = read_guesses()
 
 
     if lives == 0:
