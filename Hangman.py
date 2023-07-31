@@ -5,6 +5,7 @@ from makersign import LedSign
 pygame.display.set_caption('Quick Start')
 screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 window_size = screen.get_size()
+screen.fill("blue")
 screen.fill("black")
 
 window_width = screen.get_width()
