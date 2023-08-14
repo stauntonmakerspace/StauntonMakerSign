@@ -1,7 +1,7 @@
 
 import pygame
 from makersign import LedSign
-
+import ClearSign
 
 pygame.display.set_caption('Quick Start')
 screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
@@ -115,7 +115,10 @@ running = True
 word_set = False
 a = 0
 clock = pygame.time.Clock()
+clCo = 1
 while running:
+    ClearSign.clearScreen(clCo)
+    clCo = 0
     clock.tick(60)
     a += 1
     for event in pygame.event.get():
