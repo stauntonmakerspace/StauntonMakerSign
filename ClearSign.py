@@ -22,8 +22,7 @@ def clearScreen():
         if a % 5 == 0:
             if x < 1360:
                 pygame.draw.rect(screen, "blue", rect=(x, 160, 30, 200))
-                pygame.draw.rect(screen, "black", rect=(x - 20, 160, 10, 200))
-                print(x)
+                #pygame.draw.rect(screen, "black", rect=(x - 20, 160, 10, 200))
                 x += 1
             else:
                 return False
