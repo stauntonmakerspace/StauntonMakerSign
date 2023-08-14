@@ -117,8 +117,9 @@ a = 0
 clock = pygame.time.Clock()
 clearCount = 1
 while running:
-    ClearSign.clearScreen(clearCount)
-    clearCount = 0
+    if clearCount == 1:
+        ClearSign.clearScreen()
+        clearCount = 0
     clock.tick(60)
     a += 1
     for event in pygame.event.get():

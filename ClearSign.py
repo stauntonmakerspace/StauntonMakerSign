@@ -15,40 +15,35 @@ sign.attach("/dev/ttyUSB0")
 
 
 
-def clearScreen(clearCount):
+def clearScreen():
     global x
-    global d
     global a
-    if clearCount == 1:
-        for i in range(40):
-            if a % 5 == 0:
+    for i in range(20):
+        if a % 5 == 0:
+            if x < 1360:
                 pygame.draw.rect(screen, "blue", rect=(x, 160, 30, 200))
-                if d == True:
-                    pygame.draw.rect(screen, "black", rect=(x - 20, 160, 10, 200))
-                    print(x)
-                    x += 1
-                elif not d:
-                    pygame.draw.rect(screen, "black", rect=(x + 35, 160, 10, 200))
-                    x -= 1
-                if x > 1350:
-                    d = False
-                    x = 1350
-                elif x < 15:
-                    d = True
-                    x = 15
-running = True
+                pygame.draw.rect(screen, "black", rect=(x - 20, 160, 10, 200))
+                print(x)
+                x += 1
+            else:
+                return False
+    return True
+
+
+clearRunning = True
 a = 0
 x = 10
 d = True
 clock = pygame.time.Clock()
 clearCount = 1
-while running:
+while clearRunning:
     clock.tick(60)
     a += 1
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            running = False
-    #clearScreen()
+            clearRunning = False
+    clearRunning = clearScreen()
+    clearCount = 0
 
 
     sign.sample_surface(screen)
