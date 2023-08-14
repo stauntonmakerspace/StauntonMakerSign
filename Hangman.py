@@ -2,6 +2,7 @@
 import pygame
 from makersign import LedSign
 
+
 pygame.display.set_caption('Quick Start')
 screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 window_size = screen.get_size()
@@ -22,10 +23,12 @@ correct = ""
 LetterList = ""
 lives = 10
 deathColor = "red"
-winStart = True
 sStart = False
-winClr = "blue"
-winBar = (40, 160, 1340, 200)
+x = 10
+x1 = 10
+y = 160
+d = True
+fc = "red"
 
 sign = LedSign.load("sign.txt")
 sign.attach("/dev/ttyUSB0")
@@ -115,10 +118,6 @@ clock = pygame.time.Clock()
 while running:
     clock.tick(60)
     a += 1
-    if not sStart:
-        screen.fill("black", rect=(0, 0, 1536, 960/3+50))
-        sStart = True
-    deathBar = screen.fill(color="red", rect=(40, 160, 1350 - (135 * lives), 200))
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -130,17 +129,35 @@ while running:
         word_set = True
     elif word_set:
         if check_win():
-            if winStart:
-                pygame.draw.rect(screen, winClr, rect=winBar)
-                winStart = False
-            if winClr == "blue" and a % 9 == 0:
-                winClr = "green"
-            elif winClr == "green" and a % 30 == 0:
-                winClr = "blue"
-            pygame.draw.rect(screen, winClr, rect=winBar)
+            for i in range(40):
+                if a % 5 == 0:
+                    pygame.draw.rect(screen, "blue", rect=(x, 160, 30, 200))
+                    pygame.draw.rect(screen, "hotPink", rect=(40, y, 1350, 30))
+                    pygame.draw.rect(screen, "purple", rect=(x, y, 80, 80))
+                    if d:
+                        pygame.draw.rect(screen, "black", rect=(x - 20, 160, 10, 200))
+                        pygame.draw.rect(screen, "black", rect=(40, y - 20, 1350, 10))
+                        pygame.draw.rect(screen, "black", rect=(x - 20, y - 20, 10, 10))
+                        x += 1
+                        if a % 30 == 0:
+                            y += 1
+                    elif not d:
+                        pygame.draw.rect(screen, "black", rect=(x + 35, 160, 10, 200))
+                        pygame.draw.rect(screen, "black", rect=(40, y + 30, 1350, 10))
+                        pygame.draw.rect(screen, "black", rect=(x + 60, y + 5, 84, 84))
+                        x -= 1
+                        if a % 30 == 0:
+                            y -= 1
+                    if x > 1350:
+                        d = False
+                        x = 1350
+                    elif x < 15:
+                        d = True
+                        x = 15
 
         else:
             guesses = read_guesses()
+            deathBar = pygame.draw.rect(screen, color=fc, rect=(40, 160, 1350 - (135 * lives), 200))
     if lives == 0:
         for line in range(len(lines)):
             for s in range(len(word)):
