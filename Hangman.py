@@ -115,10 +115,10 @@ running = True
 word_set = False
 a = 0
 clock = pygame.time.Clock()
-clCo = 1
+clearCount = 1
 while running:
-    ClearSign.clearScreen(clCo)
-    clCo = 0
+    ClearSign.clearScreen(clearCount)
+    clearCount = 0
     clock.tick(60)
     a += 1
     for event in pygame.event.get():
