@@ -4,6 +4,7 @@ from makersign import LedSign
 import ClearSign
 
 pygame.display.set_caption('Quick Start')
+pygame.font.init()
 screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 window_size = screen.get_size()
 screen.fill("blue")
@@ -29,6 +30,7 @@ x1 = 10
 y = 160
 d = True
 fc = "red"
+word_set = False
 
 sign = LedSign.load("sign.txt")
 sign.attach("/dev/ttyUSB0")
@@ -55,21 +57,21 @@ def set_word():
 
 def draw_word(w):
     for i in range(len(w)):
-        if i < 14:
-            x = (window_width / len(w) + (100 * i))
+        if i < 20:
+            x = (window_width / len(w) + (150 * i))
             y = window_height - 200
-        elif i >= 14:
-            x = (window_width / len(w) + (100 * (i - 14)))
-            y = window_height - 100
+        elif i >= 20:
+            x = (window_width / len(w) + (150 * (i - 20)))
+            y = window_height - 80
 
         if w[i] != " ":
-            line = pygame.draw.line(screen, "white", (x, y), ((x + 50), y))
-            line.y = y
-            lines.append(line)
+            color = "white"
         elif w[i] == " ":
-            line = pygame.draw.line(screen, "black", (x, y), ((x + 50), y))
-            line.y = y
-            lines.append(line)
+            color = "black"
+
+        line = pygame.draw.line(screen, color, (x, y), ((x + 100), y))
+        line.y = y
+        lines.append(line)
 
 
 def read_guesses():
@@ -85,13 +87,18 @@ def read_guesses():
                     if gc != False:
                         for line in range(len(lines)):
                             for s in range(len(word)):
-                                if (line == s and word[s] == ev.unicode):
-                                    font = pygame.font.SysFont("arial", size=50)
-                                    text = font.render("{}".format(word[s]), True, "RED")
-                                    screen.blit(text, (lines[line].centerx, lines[line].y - 50))
+                                if line == s and word[s] == ev.unicode:
+                                    font = pygame.font.SysFont("arial", size=150)
+                                    text = font.render("{}".format(word[s]), True, "Purple")
+                                    screen.blit(text, (lines[line].centerx-30, lines[line].y - 150))
                     elif not gc:
                         lives -= 1
             return str(guess_list)
+
+def word_search():
+    global guesses
+    guesses = read_guesses()
+    pygame.draw.rect(screen, color=fc, rect=(40, 160, 1350 - (135 * lives), 200))
 
 
 def guess_correct(guess):
@@ -111,69 +118,76 @@ def check_win():
         return False
 
 
+def loss():
+    for line in range(len(lines)):
+        for s in range(len(word)):
+            if line == s:
+                font = pygame.font.SysFont("arial", size=50)
+                text = font.render("{}".format(word[s]), True, "RED")
+                screen.blit(text, (lines[line].centerx, lines[line].y - 50))
+
+                font = pygame.font.SysFont("arial", size=100)
+                text = font.render("{}".format(f"You ran out of lives!"), True, "RED")
+                screen.blit(text, (1536 / 2, 960 / 2))
+
+
+def win():
+    global d
+    global x
+    global y
+    global a
+    if a % 5 == 0:
+        pygame.draw.rect(screen, "blue", rect=(x, 160, 30, 200))
+        pygame.draw.rect(screen, "hotPink", rect=(40, y, 1350, 30))
+        if d:
+            pygame.draw.rect(screen, "black", rect=(x - 20, 160, 10, 200))
+            pygame.draw.rect(screen, "black", rect=(40, y - 20, 1350, 10))
+            x += 10
+            if a % 30 == 0:
+                y += 10
+        elif not d:
+            pygame.draw.rect(screen, "black", rect=(x + 35, 160, 10, 200))
+            pygame.draw.rect(screen, "black", rect=(40, y + 30, 1350, 10))
+            x -= 10
+            if a % 30 == 0:
+                y -= 10
+        if x > 1350:
+            d = False
+            x = 1350
+        elif x < 15:
+            d = True
+            x = 15
+
 running = True
-word_set = False
 a = 0
 clock = pygame.time.Clock()
 clearCount = 1
 while running:
     if clearCount == 1:
-        ClearSign.clearScreen()
+        ClearSign
         clearCount = 0
     clock.tick(60)
     a += 1
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
+    sign.sample_surface(screen)
+    sign.draw(screen)
     if not word_set:
         word = set_word()
-        if len(word) > 28:
+        if len(word) > 40:
             word = set_word()
         draw_word(word)
         word_set = True
-    elif word_set:
+        font = pygame.font.SysFont("arial", size=100)
+        text = font.render("{}".format("Someone set a word for you! Guess a letter!"), True, "Blue")
+        screen.blit(text, (900, 1200))
+        text = font.render("{}".format("If you see any blanks, press space."), True, "Blue")
+        screen.blit(text, (900, 1350))
+    else:
         if check_win():
-            for i in range(40):
-                if a % 5 == 0:
-                    pygame.draw.rect(screen, "blue", rect=(x, 160, 30, 200))
-                    pygame.draw.rect(screen, "hotPink", rect=(40, y, 1350, 30))
-                    pygame.draw.rect(screen, "purple", rect=(x, y, 80, 80))
-                    if d:
-                        pygame.draw.rect(screen, "black", rect=(x - 20, 160, 10, 200))
-                        pygame.draw.rect(screen, "black", rect=(40, y - 20, 1350, 10))
-                        pygame.draw.rect(screen, "black", rect=(x - 20, y - 20, 10, 10))
-                        x += 1
-                        if a % 30 == 0:
-                            y += 1
-                    elif not d:
-                        pygame.draw.rect(screen, "black", rect=(x + 35, 160, 10, 200))
-                        pygame.draw.rect(screen, "black", rect=(40, y + 30, 1350, 10))
-                        pygame.draw.rect(screen, "black", rect=(x + 60, y + 5, 84, 84))
-                        x -= 1
-                        if a % 30 == 0:
-                            y -= 1
-                    if x > 1350:
-                        d = False
-                        x = 1350
-                    elif x < 15:
-                        d = True
-                        x = 15
-
+            win()
         else:
-            guesses = read_guesses()
-            deathBar = pygame.draw.rect(screen, color=fc, rect=(40, 160, 1350 - (135 * lives), 200))
+            word_search()
     if lives == 0:
-        for line in range(len(lines)):
-            for s in range(len(word)):
-                if line == s:
-                    font = pygame.font.SysFont("arial", size=50)
-                    text = font.render("{}".format(word[s]), True, "RED")
-                    screen.blit(text, (lines[line].centerx, lines[line].y - 50))
+        loss()
 
-        font = pygame.font.SysFont("arial", size=50)
-        text = font.render("{}".format(f"You ran out of lives!"), True, "RED")
-        screen.blit(text, (1536/3, 960/2))
-    sign.sample_surface(screen)
-    sign.draw(screen)
 
     pygame.display.flip()

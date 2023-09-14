@@ -1,7 +1,9 @@
 import pygame
 from makersign import LedSign
+import random
 
 pygame.display.set_caption('Quick Start')
+pygame.font.init()
 screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 window_size = screen.get_size()
 
@@ -22,12 +24,26 @@ d = True
 clock = pygame.time.Clock()
 clearCount = 1
 rect = None
+r = 4
+g = 7
+b = 88
 while clearRunning:
     clock.tick(60)
-    x += 5
+    x += 3
     rect=(x, 160, 30, 200)
     screen.fill("black")
-    pygame.draw.rect(screen, "blue", rect)
+    pygame.draw.rect(screen, pygame.Color(r,g,b), rect)
+    font = pygame.font.SysFont("arial", size=100)
+    text = font.render("{}".format("Clearing Sign"), True, "Blue")
+    screen.blit(text, (800, 1200))
+    text = font.render("{}".format("Enter a word or phrase for someone to guess!"), True, "Blue")
+    screen.blit(text, (800, 1350))
+    text = font.render("{}".format("No capital letters.  Press esc to confirm your entry"), True, "Blue")
+    screen.blit(text, (800,1500))
+    if x % 5 ==0:
+        r = random.randint(0,255)
+        g = random.randint(0,255)
+        b = random.randint(0,255)
 
     sign.sample_surface(screen)
     sign.draw(screen)
