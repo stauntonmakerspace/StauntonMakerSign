@@ -18,9 +18,7 @@ screen.fill("black")
 
 
 clearRunning = True
-a = 0
 x = 10
-d = True
 clock = pygame.time.Clock()
 clearCount = 1
 rect = None
@@ -29,18 +27,14 @@ g = 7
 b = 88
 while clearRunning:
     clock.tick(60)
-    x += 3
+    x += 5
     rect=(x, 160, 30, 200)
     screen.fill("black")
     pygame.draw.rect(screen, pygame.Color(r,g,b), rect)
-    font = pygame.font.SysFont("arial", size=100)
+    font = pygame.font.SysFont("arial", size=80)
     text = font.render("{}".format("Clearing Sign"), True, "Blue")
-    screen.blit(text, (300, 500))
-    text = font.render("{}".format("Enter a word or phrase for someone to guess!"), True, "Blue")
-    screen.blit(text, (300, 650))
-    text = font.render("{}".format("No capital letters.  Press esc to confirm your entry"), True, "Blue")
-    screen.blit(text, (300, 800))
-    if x % 5 ==0:
+    screen.blit(text, (200, 500))
+    if x % 20 ==0:
         r = random.randint(0,255)
         g = random.randint(0,255)
         b = random.randint(0,255)

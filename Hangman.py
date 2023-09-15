@@ -2,6 +2,7 @@
 import pygame
 from makersign import LedSign
 import ClearSign
+import random
 
 pygame.display.set_caption('Quick Start')
 pygame.font.init()
@@ -22,15 +23,12 @@ keys = [pygame.K_q, pygame.K_w, pygame.K_e, pygame.K_r, pygame.K_t, pygame.K_y, 
 lines = []
 correct = ""
 LetterList = ""
-lives = 10
 deathColor = "red"
-sStart = False
-x = 10
-x1 = 10
-y = 160
-d = True
 fc = "red"
 word_set = False
+lives = 10
+won = False
+lost = False
 
 sign = LedSign.load("sign.txt")
 sign.attach("/dev/ttyUSB0")
@@ -41,21 +39,45 @@ def set_word():
     string = ""
     pygame.font.init()
     done = False
+    letterCount = 0
+    x = 200
+    y = 600
+    draw = False
     while not done:
+        if not draw:
+            font = pygame.font.SysFont("arial", size=40)
+            text = font.render("{}".format("Enter a word or phrase for someone to guess!"), True, "Blue")
+            screen.blit(text, (200, 450))
+            text = font.render("{}".format("No capital letters.  Press esc to confirm your entry"), True, "Blue")
+            screen.blit(text, (200, 550))
+            draw = True
         for ev in pygame.event.get():
             if ev.type == pygame.KEYDOWN:
                 for i in keys:
                     if ev.key == i:
                         string += str(ev.unicode)
+                        letterCount += 1
+                        font = pygame.font.SysFont("arial", size=40)
+                        text = font.render("{}".format(ev.unicode), True, "Purple")
+                        screen.blit(text, (x+(letterCount*20), y))
                 if ev.key == pygame.K_ESCAPE:
                     done = True
-    for i in string:
-        if i not in LetterList:
-            LetterList += i
+                if ev.key == pygame.K_BACKSPACE:
+                    string = string[0:len(string)-1]
+                    LetterList = LetterList[0:len(LetterList)-1]
+                    pygame.draw.rect(screen,color="black",rect=(x+(letterCount*20),y,20,40))
+                    letterCount -= 1
+        for i in string:
+            if i not in LetterList:
+                LetterList += i
+        sign.sample_surface(screen)
+        sign.draw(screen)
+        pygame.display.flip()
     return string
 
 
 def draw_word(w):
+    global lines
     for i in range(len(w)):
         if i < 20:
             x = (window_width / len(w) + (150 * i))
@@ -74,31 +96,53 @@ def draw_word(w):
         lines.append(line)
 
 
-def read_guesses():
+def read_guesses(word):
     global lives
-    global correct
+    global won
+    global lost
+    global lines
+    draw_word(word)
     guess_list = ""
-    while lives != 0:
+    hidden = False
+    draw = False
+    while lives != 0 and won is False:
+        pygame.draw.rect(screen, color=fc, rect=(40, 160, 1350 - (135 * lives), 200))
+        if not hidden:
+            pygame.draw.rect(screen, color = "black", rect=(150,300,900,350))
+            hidden = True
+        if not draw:
+            font = pygame.font.SysFont("arial", size=40)
+            text = font.render("{}".format("Someone entered a word for you!"), True, "Blue")
+            screen.blit(text, (200, 450))
+            text = font.render("{}".format("Guess a letter!"), True, "Blue")
+            screen.blit(text, (200, 550))
+            draw = True
         for ev in pygame.event.get():
             if ev.type == pygame.KEYDOWN:
                 if ev.key in keys:
-                    guess_list += str(ev.unicode)
-                    gc = guess_correct(ev.unicode)
-                    if gc != False:
-                        for line in range(len(lines)):
-                            for s in range(len(word)):
-                                if line == s and word[s] == ev.unicode:
-                                    font = pygame.font.SysFont("arial", size=150)
-                                    text = font.render("{}".format(word[s]), True, "Purple")
-                                    screen.blit(text, (lines[line].centerx-30, lines[line].y - 150))
-                    elif not gc:
-                        lives -= 1
-            return str(guess_list)
+                    if ev.unicode not in guess_list:
+                        guess_list += str(ev.unicode)
+                        gc = guess_correct(ev.unicode)
+                        if gc != False:
+                            for line in range(len(lines)):
+                                for s in range(len(word)):
+                                    if line == s and word[s] == ev.unicode:
+                                        font = pygame.font.SysFont("arial", size=100)
+                                        text = font.render("{}".format(word[s]), True, "Purple")
+                                        screen.blit(text, (lines[line].centerx-30, lines[line].y - 150))
+                        elif not gc:
+                            lives -= 1
+        if check_win():
+            won = True
+        if lives == 0:
+            lost = True
+        sign.sample_surface(screen)
+        sign.draw(screen)
+        pygame.display.flip()
 
-def word_search():
-    global guesses
-    guesses = read_guesses()
-    pygame.draw.rect(screen, color=fc, rect=(40, 160, 1350 - (135 * lives), 200))
+
+def word_search(word):
+    read_guesses(word)
 
 
 def guess_correct(guess):
@@ -118,77 +162,79 @@ def check_win():
         return False
 
 
-def loss():
-    for line in range(len(lines)):
-        for s in range(len(word)):
-            if line == s:
-                font = pygame.font.SysFont("arial", size=100)
-                text = font.render("{}".format(word[s]), True, "Blue")
-                screen.blit(text, (lines[line].centerx-30, lines[line].y - 150))
-
-                font = pygame.font.SysFont("arial", size=100)
-                text = font.render("{}".format(f"You ran out of lives!"), True, "RED")
-                screen.blit(text, (1536 / 2, 960 / 2))
-
-
-def win():
-    global d
-    global x
-    global y
-    global a
-    ClearSign
-    '''
-    pygame.draw.rect(screen, "blue", rect=(x, 160, 30, 200))
-    pygame.draw.rect(screen, "hotPink", rect=(40, y, 1350, 30))
-    if d:
-        pygame.draw.rect(screen, "black", rect=(x - 20, 160, 10, 200))
-        pygame.draw.rect(screen, "black", rect=(40, y - 20, 1350, 10))
-        x += 10
-        if a % 30 == 0:
-            y += 10
-    elif not d:
-        pygame.draw.rect(screen, "black", rect=(x + 35, 160, 10, 200))
-        pygame.draw.rect(screen, "black", rect=(40, y + 30, 1350, 10))
-        x -= 10
-        if a % 30 == 0:
-            y -= 10
-    if x > 1350:
-        d = False
-        x = 1350
-    elif x < 15:
-        d = True
-        x = 15
-'''
-running = True
-a = 0
-clock = pygame.time.Clock()
-clearCount = 1
-while running:
-    if clearCount == 1:
-        ClearSign
-        clearCount = 0
-    clock.tick(60)
-    a += 1
-    sign.sample_surface(screen)
-    sign.draw(screen)
-    if not word_set:
-        word = set_word()
-        if len(word) > 40:
-            word = set_word()
+def loss(word):
+    runs = True
+    while runs:
+        pygame.draw.rect(screen, color="black",rect=(200,500,1800,350))
+        for line in range(len(lines)):
+            for s in range(len(word)):
+                if line == s:
+                    font = pygame.font.SysFont("arial", size=100)
+                    text = font.render("{}".format(word[s]), True, "Red")
+                    screen.blit(text, (lines[line].centerx-30, lines[line].y - 150))
         draw_word(word)
-        word_set = True
         font = pygame.font.SysFont("arial", size=100)
-        text = font.render("{}".format("Someone set a word for you! Guess a letter!"), True, "Blue")
-        screen.blit(text, (300, 500))
-        text = font.render("{}".format("If you see any blanks, press space."), True, "Blue")
-        screen.blit(text, (300, 650))
-    else:
-        if check_win():
-            win()
-        else:
-            word_search()
-    if lives == 0:
-        loss()
+        text = font.render("{}".format(f"You ran out of lives!"), True, "RED")
+        screen.blit(text, (200, 960 / 2))
+        sign.sample_surface(screen)
+        sign.draw(screen)
+        pygame.display.flip()
 
 
-    pygame.display.flip()
+def win(word):
+    runs = True
+    r = 4
+    g = 7
+    b = 88
+    d = 2
+    x = 15
+    drawn = False
+    count = 0
+    hidden = False
+    while runs:
+        if not hidden:
+            pygame.draw.rect(screen, color = "black", rect=(150,300,900,350))
+            hidden = True
+        if x > 1350:
+            d = -abs(d)
+            x = 1350
+            count += 1
+        elif x < 10:
+            d = abs(d)
+            x = 10
+            count += 1
+        x+=d
+        rect1 = (x, 160, 30, 200)
+        rect2 = (x+100, 160, 30, 200)
+        pygame.draw.rect(screen, pygame.Color(r, g, b), rect1)
+        pygame.draw.rect(screen, pygame.Color(r, g, b), rect2)
+        if x % 20 == 0:
+            r = random.randint(0, 255)
+            g = random.randint(0, 255)
+            b = random.randint(0, 255)
+        if not drawn:
+            for line in range(len(lines)):
+                for s in range(len(word)):
+                    if line == s:
+                        draw_word(word)
+                        font = pygame.font.SysFont("arial", size=100)
+                        text = font.render("{}".format(word[s]), True, "Blue")
+                        screen.blit(text, (lines[line].centerx - 30, lines[line].y - 150))
+            drawn = True
+        font = pygame.font.SysFont("arial", size=100)
+        text = font.render("{}".format(f"You won!"), True, "RED")
+        screen.blit(text, (1536 / 2, 960 / 2))
+        sign.sample_surface(screen)
+        sign.draw(screen)
+        pygame.display.flip()
+        if count >= 4:
+            runs = False
+
+
+ClearSign
+word = set_word()
+word_search(word)
+if won:
+    win(word)
+elif lost:
+    loss(word)
