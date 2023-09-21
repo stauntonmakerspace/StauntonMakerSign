@@ -107,13 +107,13 @@ def read_guesses(word):
     draw = False
     clock = pygame.time.Clock()
     while lives != 0 and won is False:
-        pygame.draw.rect(screen, color=fc, rect=(40, 160, 1350 - (135 * lives), 200))
         if not hidden:
             pygame.draw.rect(screen, color = "black", rect=(150,300,900,350))
             hidden = True
         clock.tick(60)
         screen.fill("black")
         draw_word(word)
+        pygame.draw.rect(screen, color=fc, rect=(40, 160, 1350 - (135 * lives), 200))
         font = pygame.font.SysFont("arial", size=40)
         text = font.render("{}".format("Someone entered a word for you!"), True, "Blue")
         screen.blit(text, (200, 450))
