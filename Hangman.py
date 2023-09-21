@@ -166,7 +166,9 @@ def check_win():
 def loss(word):
     runs = True
     while runs:
+        screen.fill("black")
         pygame.draw.rect(screen, color="black",rect=(200,500,1800,350))
+        pygame.draw.rect(screen, color=fc, rect=(40, 160, 1350 - (135 * lives), 200))
         for line in range(len(lines)):
             for s in range(len(word)):
                 if line == s:
