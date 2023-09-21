@@ -37,6 +37,7 @@ sign.attach("/dev/ttyUSB0")
 def set_word():
     global LetterList
     string = ""
+    clock = pygame.time.Clock()
     pygame.font.init()
     done = False
     letterCount = 0
