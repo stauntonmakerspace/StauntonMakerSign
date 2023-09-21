@@ -44,13 +44,13 @@ def set_word():
     y = 600
     draw = False
     while not done:
-        if not draw:
-            font = pygame.font.SysFont("arial", size=40)
-            text = font.render("{}".format("Enter a word or phrase for someone to guess!"), True, "Blue")
-            screen.blit(text, (200, 450))
-            text = font.render("{}".format("No capital letters.  Press esc to confirm your entry"), True, "Blue")
-            screen.blit(text, (200, 550))
-            draw = True
+        clock.tick(60)
+        screen.fill("black")
+        font = pygame.font.SysFont("arial", size=40)
+        text = font.render("{}".format("Enter a word or phrase for someone to guess!"), True, "Blue")
+        screen.blit(text, (200, 450))
+        text = font.render("{}".format("No capital letters.  Press esc to confirm your entry"), True, "Blue")
+        screen.blit(text, (200, 550))
         for ev in pygame.event.get():
             if ev.type == pygame.KEYDOWN:
                 for i in keys:
