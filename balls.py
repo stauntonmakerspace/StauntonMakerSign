@@ -17,10 +17,16 @@ universe.colour = (0,0,0)
 universe.addFunctions(['move', 'bounce', 'collide', 'drag', 'accelerate'])
 max_size = 20
 universe.assignMaxBallSize(max_size)
-colors = [(255,0,0),(0,255,0), (0,0,255), (255,255,0), (0,255,255), (255,0,255)]
+# colors = [(255,0,0),(0,255,0), (0,0,255), (255,255,0), (0,255,255), (255,0,255)]
+
+
 p = 25
 for i in range(p):
-    universe.addParticles(mass=max_size, size=max_size, speed=5, elasticity=1, colour=colors[i%len(colors)])
+    r = random.randint(0, 255)
+    g = random.randint(0, 255)
+    b = random.randint(0, 255)
+    color = (r, g, b)
+    universe.addParticles(mass=max_size, size=max_size, speed=5, elasticity=1, colour=color)
 
 selected_particle = None
 paused = False
