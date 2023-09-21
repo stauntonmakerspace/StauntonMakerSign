@@ -35,6 +35,7 @@ sign.attach("/dev/ttyUSB0")
 
 
 def set_word():
+    clock = pygame.time.Clock()
     global LetterList
     string = ""
     pygame.font.init()
@@ -57,16 +58,15 @@ def set_word():
                     if ev.key == i:
                         string += str(ev.unicode)
                         letterCount += 1
-                        font = pygame.font.SysFont("arial", size=40)
-                        text = font.render("{}".format(ev.unicode), True, "Purple")
-                        screen.blit(text, (x+(letterCount*20), y))
                 if ev.key == pygame.K_ESCAPE:
                     done = True
                 if ev.key == pygame.K_BACKSPACE:
                     string = string[0:len(string)-1]
                     LetterList = LetterList[0:len(LetterList)-1]
-                    pygame.draw.rect(screen,color="black",rect=(x+(letterCount*20),y,20,40))
                     letterCount -= 1
+        font = pygame.font.SysFont("arial", size=40)
+        text = font.render("{}".format(string), True, "Purple")
+        screen.blit(text, (x, y))
         for i in string:
             if i not in LetterList:
                 LetterList += i
