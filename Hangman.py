@@ -128,6 +128,7 @@ def read_guesses(word):
                             for line in range(len(lines)):
                                 for s in range(len(word)):
                                     if line == s and word[s] == ev.unicode:
+                                        screen.fill("black",rect=(0,0,1200,350))
                                         font = pygame.font.SysFont("arial", size=100)
                                         text = font.render("{}".format(word[s]), True, "Purple")
                                         screen.blit(text, (lines[line].centerx-30, lines[line].y - 150))
@@ -194,7 +195,7 @@ def win(word):
     hidden = False
     while runs:
         if not hidden:
-            pygame.draw.rect(screen, color = "black", rect=(150,300,900,350))
+            pygame.draw.rect(screen, color="black", rect=(150, 300, 900, 350))
             hidden = True
         if x > 1350:
             d = -abs(d)
