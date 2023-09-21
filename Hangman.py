@@ -29,13 +29,13 @@ word_set = False
 lives = 10
 won = False
 lost = False
+word = ""
 
 sign = LedSign.load("sign.txt")
 sign.attach("/dev/ttyUSB0")
 
 
 def set_word():
-    clock = pygame.time.Clock()
     global LetterList
     string = ""
     clock = pygame.time.Clock()
@@ -108,7 +108,7 @@ def read_guesses(word):
     clock = pygame.time.Clock()
     while lives != 0 and won is False:
         if not hidden:
-            pygame.draw.rect(screen, color = "black", rect=(150,300,900,350))
+            pygame.draw.rect(screen, color = "black", rect=(100,270,900,350))
             hidden = True
         clock.tick(60)
         screen.fill("black")
@@ -234,11 +234,28 @@ def win(word):
         if count >= 4:
             runs = False
 
+def game():
+    global won
+    global lost
+    global word
+    global lines
+    global correct
+    global LetterList
+    ClearSign
+    word = set_word()
+    word_search(word)
+    if won:
+        win(word)
+        won = False
+        lines = []
+        correct = ""
+        LetterList = ""
+    elif lost:
+        loss(word)
+        lost = False
+        lines = []
+        correct = ""
+        LetterList = ""
+    game()
 
-ClearSign
-word = set_word()
-word_search(word)
-if won:
-    win(word)
-elif lost:
-    loss(word)
+game()
