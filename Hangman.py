@@ -189,7 +189,7 @@ def win(word):
     r = 4
     g = 7
     b = 88
-    d = 2
+    d = 5
     x = 15
     drawn = False
     count = 0
