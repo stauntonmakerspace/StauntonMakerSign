@@ -128,10 +128,13 @@ def read_guesses(word):
                             for line in range(len(lines)):
                                 for s in range(len(word)):
                                     if line == s and word[s] == ev.unicode:
-                                        screen.fill("black",rect=(0,0,1200,350))
-                                        font = pygame.font.SysFont("arial", size=100)
-                                        text = font.render("{}".format(word[s]), True, "Purple")
-                                        screen.blit(text, (lines[line].centerx-30, lines[line].y - 150))
+                                        screen.fill("black")
+                                        for line in range(len(lines)):
+                                            for s in range(len(correct)):
+                                                if line == s:
+                                                    font = pygame.font.SysFont("arial", size=100)
+                                                    text = font.render("{}".format(correct[s]), True, "Red")
+                                                    screen.blit(text, (lines[line].centerx - 30, lines[line].y - 150))
                         elif not gc:
                             lives -= 1
         if check_win():
