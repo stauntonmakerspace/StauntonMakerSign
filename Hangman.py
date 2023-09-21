@@ -106,18 +106,19 @@ def read_guesses(word):
     guess_list = ""
     hidden = False
     draw = False
+    clock = pygame.time.Clock()
     while lives != 0 and won is False:
         pygame.draw.rect(screen, color=fc, rect=(40, 160, 1350 - (135 * lives), 200))
         if not hidden:
             pygame.draw.rect(screen, color = "black", rect=(150,300,900,350))
             hidden = True
-        if not draw:
-            font = pygame.font.SysFont("arial", size=40)
-            text = font.render("{}".format("Someone entered a word for you!"), True, "Blue")
-            screen.blit(text, (200, 450))
-            text = font.render("{}".format("Guess a letter!"), True, "Blue")
-            screen.blit(text, (200, 550))
-            draw = True
+        clock.tick(60)
+        screen.fill("black")
+        font = pygame.font.SysFont("arial", size=40)
+        text = font.render("{}".format("Someone entered a word for you!"), True, "Blue")
+        screen.blit(text, (200, 450))
+        text = font.render("{}".format("Guess a letter!"), True, "Blue")
+        screen.blit(text, (200, 550))
         for ev in pygame.event.get():
             if ev.type == pygame.KEYDOWN:
                 if ev.key in keys:
@@ -128,7 +129,6 @@ def read_guesses(word):
                             for line in range(len(lines)):
                                 for s in range(len(word)):
                                     if line == s and word[s] == ev.unicode:
-                                        screen.fill("black")
                                         for line in range(len(lines)):
                                             for s in range(len(correct)):
                                                 if line == s:
