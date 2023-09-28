@@ -250,6 +250,7 @@ def game():
     global lines
     global correct
     global LetterList
+    global lives
     ClearSign
     word = set_word()
     word_search(word)
@@ -259,12 +260,14 @@ def game():
         lines = []
         correct = ""
         LetterList = ""
+        lives = 10
     elif lost:
         loss(word)
         lost = False
         lines = []
         correct = ""
         LetterList = ""
+        lives = 10
     game()
 
 game()
