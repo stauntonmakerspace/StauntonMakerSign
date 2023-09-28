@@ -44,7 +44,6 @@ def set_word():
     letterCount = 0
     x = 200
     y = 600
-    draw = False
     while not done:
         clock.tick(60)
         screen.fill("black")
@@ -60,10 +59,13 @@ def set_word():
                         string += str(ev.unicode)
                         letterCount += 1
                 if ev.key == pygame.K_ESCAPE:
-                    done = True
+                    if len(string) > 28:
+                        string = ""
+                        set_word()
+                    else:
+                        done = True
                 if ev.key == pygame.K_BACKSPACE:
                     string = string[0:len(string)-1]
-                    LetterList = LetterList[0:len(LetterList)-1]
                     letterCount -= 1
         font = pygame.font.SysFont("arial", size=40)
         text = font.render("{}".format(string), True, "Purple")
@@ -80,11 +82,11 @@ def set_word():
 def draw_word(w):
     global lines
     for i in range(len(w)):
-        if i < 20:
+        if i < 14:
             x = (window_width / len(w) + (150 * i))
             y = window_height - 200
-        elif i >= 20:
-            x = (window_width / len(w) + (150 * (i - 20)))
+        elif i >= 14:
+            x = (window_width / len(w) + (150 * (i - 14)))
             y = window_height - 80
 
         if w[i] != " ":
@@ -126,11 +128,12 @@ def read_guesses(word):
                         guess_list += str(ev.unicode)
                         guess_correct(ev.unicode)
         for line in range(len(lines)):
-            for s in range(len(correct)):
+            for s in range(len(word)):
                 if line == s:
-                    font = pygame.font.SysFont("arial", size=100)
-                    text = font.render("{}".format(correct[s]), True, "Red")
-                    screen.blit(text, (lines[line].centerx - 30, lines[line].y - 150))
+                    if word[s] in correct:
+                        font = pygame.font.SysFont("arial", size=100)
+                        text = font.render("{}".format(word[s]), True, "Red")
+                        screen.blit(text, (lines[line].centerx - 30, lines[line].y - 130))
         if check_win():
             won = True
         if lives == 0:
@@ -165,7 +168,11 @@ def check_win():
 
 def loss(word):
     runs = True
+    clock = pygame.time.Clock()
+    p = 0
     while runs:
+        clock.tick(60)
+        p += 1
         screen.fill("black")
         pygame.draw.rect(screen, color="black",rect=(200,500,1800,350))
         pygame.draw.rect(screen, color=fc, rect=(40, 160, 1350 - (135 * lives), 200))
@@ -182,6 +189,8 @@ def loss(word):
         sign.sample_surface(screen)
         sign.draw(screen)
         pygame.display.flip()
+        if p >= 60:
+            runs = False
 
 
 def win(word):
