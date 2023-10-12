@@ -48,6 +48,7 @@ def set_word():
     y = 600
     idleClock = 0
     idle = False
+    pygame.event.clear()
     while not done and not idle:
         idleClock += 1
         print(idleClock)
@@ -92,6 +93,7 @@ def set_word():
 
 def draw_word(w):
     global lines
+    lines.clear()
     for i in range(len(w)):
         if i < 14:
             x = (window_width / len(w) + (150 * i))
@@ -192,7 +194,7 @@ def loss(word):
                     font = pygame.font.SysFont("arial", size=100)
                     text = font.render("{}".format(word[s]), True, "Red")
                     screen.blit(text, (lines[line].centerx-30, lines[line].y - 150))
-        draw_word(word)
+        #draw_word(word)
         font = pygame.font.SysFont("arial", size=100)
         text = font.render("{}".format(f"You ran out of lives!"), True, "RED")
         screen.blit(text, (200, 960 / 2))
@@ -210,6 +212,8 @@ def win(word):
     b = 88
     d = 5
     x = 15
+    y = 160
+    dy = 5
     count = 0
     hidden = False
     clock = pygame.time.Clock()
@@ -226,12 +230,21 @@ def win(word):
             d = abs(d)
             x = 10
             count += 1
+        if y > 360:
+            dy = -abs(dy)
+            y = 360
+        elif y < 160:
+            dy = abs(dy)
+            y = 160
         x += d
+        y += dy
         rect1 = (x, 160, 30, 200)
         rect2 = (x+100, 160, 30, 200)
+        rect3 = (15, y, 1330, 30)
         screen.fill("black")
         pygame.draw.rect(screen, pygame.Color(r, g, b), rect1)
         pygame.draw.rect(screen, pygame.Color(r, g, b), rect2)
+        pygame.draw.rect(screen,pygame.Color(g,b,r), rect3)
 
         if x % 20 == 0:
             r = random.randint(0, 255)
