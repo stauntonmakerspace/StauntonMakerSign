@@ -1,9 +1,9 @@
 
+import balls_lib
 import pygame
 from makersign import LedSign
 import ClearSign
 import random
-import balls
 import os
 
 pygame.display.set_caption('Quick Start')
@@ -204,7 +204,6 @@ def loss(word):
 
 
 def win(word):
-    global won
     runs = True
     r = 4
     g = 7
@@ -233,6 +232,7 @@ def win(word):
         screen.fill("black")
         pygame.draw.rect(screen, pygame.Color(r, g, b), rect1)
         pygame.draw.rect(screen, pygame.Color(r, g, b), rect2)
+        '''
         if x % 20 == 0:
             r = random.randint(0, 255)
             g = random.randint(0, 255)
@@ -247,12 +247,12 @@ def win(word):
         font = pygame.font.SysFont("arial", size=100)
         text = font.render("{}".format(f"You won!"), True, "RED")
         screen.blit(text, (1536 / 2, 960 / 2))
+        '''
         sign.sample_surface(screen)
         sign.draw(screen)
         pygame.display.flip()
         if count >= 4:
             runs = False
-            won = False
 
 def game():
     global won
@@ -266,7 +266,7 @@ def game():
     while not word:
         word = set_word()
         if not word:
-            os.system("python balls.py")
+            balls_lib.show_balls(screen, sign)
     word_search(word)
     if won:
         win(word)
