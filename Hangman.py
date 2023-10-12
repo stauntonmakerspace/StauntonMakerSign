@@ -232,11 +232,12 @@ def win(word):
         screen.fill("black")
         pygame.draw.rect(screen, pygame.Color(r, g, b), rect1)
         pygame.draw.rect(screen, pygame.Color(r, g, b), rect2)
-        '''
+
         if x % 20 == 0:
             r = random.randint(0, 255)
             g = random.randint(0, 255)
             b = random.randint(0, 255)
+        '''
         for line in range(len(lines)):
             for s in range(len(word)):
                 if line == s:
