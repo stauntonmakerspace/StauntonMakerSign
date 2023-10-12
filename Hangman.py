@@ -204,6 +204,7 @@ def loss(word):
 
 
 def win(word):
+    global won
     runs = True
     r = 4
     g = 7
@@ -251,6 +252,7 @@ def win(word):
         pygame.display.flip()
         if count >= 4:
             runs = False
+            won = False
 
 def game():
     global won
@@ -269,6 +271,7 @@ def game():
     if won:
         win(word)
         won = False
+        word = ""
         lines = []
         correct = ""
         LetterList = ""
@@ -280,6 +283,7 @@ def game():
         correct = ""
         LetterList = ""
         lives = 10
+        word = ""
     game()
 
 
