@@ -239,14 +239,14 @@ def win(word):
         x += d
         y += dy
         rect1 = (x, 160, 30, 200)
-        rect2 = (x+100, 160, 30, 200)
+        #rect2 = (x+100, 160, 30, 200)
         rect3 = (15, y, 1330, 30)
         screen.fill("black")
         pygame.draw.rect(screen, pygame.Color(r, g, b), rect1)
-        pygame.draw.rect(screen, pygame.Color(r, g, b), rect2)
+        #pygame.draw.rect(screen, pygame.Color(r, g, b), rect2)
         pygame.draw.rect(screen,pygame.Color(g,b,r), rect3)
 
-        if x % 40 == 0:
+        if x % 120 == 0:
             r = random.randint(0, 255)
             g = random.randint(0, 255)
             b = random.randint(0, 255)
