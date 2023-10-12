@@ -85,7 +85,7 @@ def set_word():
         sign.sample_surface(screen)
         sign.draw(screen)
         pygame.display.flip()
-        if idleClock > 60:
+        if idleClock > 300:
             idle = True
             return("")
     return string
@@ -246,7 +246,7 @@ def win(word):
         pygame.draw.rect(screen, pygame.Color(r, g, b), rect2)
         pygame.draw.rect(screen,pygame.Color(g,b,r), rect3)
 
-        if x % 20 == 0:
+        if x % 40 == 0:
             r = random.randint(0, 255)
             g = random.randint(0, 255)
             b = random.randint(0, 255)
