@@ -237,18 +237,16 @@ def win(word):
             r = random.randint(0, 255)
             g = random.randint(0, 255)
             b = random.randint(0, 255)
-        '''
         for line in range(len(lines)):
             for s in range(len(word)):
                 if line == s:
-                    draw_word(word)
+                    #draw_word(word)
                     font = pygame.font.SysFont("arial", size=100)
                     text = font.render("{}".format(word[s]), True, "Blue")
                     screen.blit(text, (lines[line].centerx - 30, lines[line].y - 150))
         font = pygame.font.SysFont("arial", size=100)
         text = font.render("{}".format(f"You won!"), True, "RED")
         screen.blit(text, (1536 / 2, 960 / 2))
-        '''
         sign.sample_surface(screen)
         sign.draw(screen)
         pygame.display.flip()
