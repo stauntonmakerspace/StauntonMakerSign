@@ -3,6 +3,8 @@ import pygame
 from makersign import LedSign
 import ClearSign
 import random
+import balls
+import os
 
 pygame.display.set_caption('Quick Start')
 pygame.font.init()
@@ -44,7 +46,11 @@ def set_word():
     letterCount = 0
     x = 200
     y = 600
-    while not done:
+    idleClock = 0
+    idle = False
+    while not done and not idle:
+        idleClock += 1
+        print(idleClock)
         clock.tick(60)
         screen.fill("black")
         font = pygame.font.SysFont("arial", size=40)
@@ -54,6 +60,7 @@ def set_word():
         screen.blit(text, (200, 550))
         for ev in pygame.event.get():
             if ev.type == pygame.KEYDOWN:
+                idleClock = 0
                 for i in keys:
                     if ev.key == i:
                         string += str(ev.unicode)
@@ -70,12 +77,16 @@ def set_word():
         font = pygame.font.SysFont("arial", size=40)
         text = font.render("{}".format(string), True, "Purple")
         screen.blit(text, (x, y))
-        for i in string:
-            if i not in LetterList:
-                LetterList += i
+        if done:
+            for i in string:
+                if i not in LetterList:
+                    LetterList += i
         sign.sample_surface(screen)
         sign.draw(screen)
         pygame.display.flip()
+        if idleClock > 60:
+            idle = True
+            return("")
     return string
 
 
@@ -106,7 +117,6 @@ def read_guesses(word):
     global lines
     guess_list = ""
     hidden = False
-    draw = False
     clock = pygame.time.Clock()
     while lives != 0 and won is False:
         if not hidden:
@@ -200,7 +210,6 @@ def win(word):
     b = 88
     d = 5
     x = 15
-    drawn = False
     count = 0
     hidden = False
     clock = pygame.time.Clock()
@@ -217,7 +226,7 @@ def win(word):
             d = abs(d)
             x = 10
             count += 1
-        x+=d
+        x += d
         rect1 = (x, 160, 30, 200)
         rect2 = (x+100, 160, 30, 200)
         screen.fill("black")
@@ -251,8 +260,11 @@ def game():
     global correct
     global LetterList
     global lives
-    ClearSign
-    word = set_word()
+    #os.system("python ClearSign.py")
+    while not word:
+        word = set_word()
+        if not word:
+            os.system("python balls.py")
     word_search(word)
     if won:
         win(word)
@@ -269,5 +281,6 @@ def game():
         LetterList = ""
         lives = 10
     game()
+
 
 game()

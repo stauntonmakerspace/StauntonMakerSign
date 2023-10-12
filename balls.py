@@ -44,6 +44,8 @@ while running:
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_SPACE:
                 paused = (True, False)[paused]
+            elif event.key == pygame.K_ESCAPE:
+                running = False
         elif event.type == pygame.MOUSEBUTTONDOWN:
             selected_particle = universe.findParticle(*pygame.mouse.get_pos())
         elif event.type == pygame.MOUSEBUTTONUP:
