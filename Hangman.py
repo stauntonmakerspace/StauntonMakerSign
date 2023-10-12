@@ -238,9 +238,9 @@ def win(word):
             y = 160
         x += d
         y += dy
-        rect1 = (x, 160, 30, 200)
+        rect1 = (x, 160, 15, 200)
         #rect2 = (x+100, 160, 30, 200)
-        rect3 = (15, y, 1330, 30)
+        rect3 = (15, y, 1330, 15)
         screen.fill("black")
         pygame.draw.rect(screen, pygame.Color(r, g, b), rect1)
         #pygame.draw.rect(screen, pygame.Color(r, g, b), rect2)
