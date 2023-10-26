@@ -5,6 +5,7 @@ from makersign import LedSign
 import ClearSign
 import random
 import os
+from string import ascii_uppercase
 
 pygame.display.set_caption('Quick Start')
 pygame.font.init()
@@ -15,8 +16,6 @@ screen.fill("black")
 
 window_width = screen.get_width()
 window_height = screen.get_height()
-print(window_width)
-print(window_height)
 keys = [pygame.K_q, pygame.K_w, pygame.K_e, pygame.K_r, pygame.K_t, pygame.K_y, pygame.K_u,
         pygame.K_i, pygame.K_o, pygame.K_p, pygame.K_a, pygame.K_s, pygame.K_d, pygame.K_f,
         pygame.K_g, pygame.K_h, pygame.K_j, pygame.K_k, pygame.K_l, pygame.K_z, pygame.K_x,
@@ -24,6 +23,7 @@ keys = [pygame.K_q, pygame.K_w, pygame.K_e, pygame.K_r, pygame.K_t, pygame.K_y, 
         pygame.K_EXCLAIM, pygame.K_SPACE]
 lines = []
 correct = ""
+incorrect = []
 LetterList = ""
 deathColor = "red"
 fc = "red"
@@ -51,7 +51,6 @@ def set_word():
     pygame.event.clear()
     while not done and not idle:
         idleClock += 1
-        print(idleClock)
         clock.tick(60)
         screen.fill("black")
         font = pygame.font.SysFont("arial", size=40)
@@ -132,7 +131,16 @@ def read_guesses(word):
         text = font.render("{}".format("Someone entered a word for you!"), True, "Blue")
         screen.blit(text, (200, 450))
         text = font.render("{}".format("Guess a letter!"), True, "Blue")
-        screen.blit(text, (200, 550))
+        screen.blit(text, (200, 500))
+        x = 195
+        for c in ascii_uppercase:
+            x+=25
+            if c in incorrect:
+                color = "Red"
+            else:
+                color = "Green"
+            text = font.render("{}".format(c), True, color)
+            screen.blit(text, (x, 550))
         for ev in pygame.event.get():
             if ev.type == pygame.KEYDOWN:
                 if ev.key in keys:
@@ -166,6 +174,7 @@ def guess_correct(guess):
         correct += str(guess)
     else:
         lives -= 1
+        incorrect.append(str(guess).upper())
         return False
 
 
@@ -274,6 +283,7 @@ def game():
     global correct
     global LetterList
     global lives
+    global incorrect
     #os.system("python ClearSign.py")
     while not word:
         word = set_word()
@@ -286,12 +296,14 @@ def game():
         word = ""
         lines = []
         correct = ""
+        incorrect = []
         LetterList = ""
         lives = 10
     elif lost:
         loss(word)
         lost = False
         lines = []
+        incorrect = []
         correct = ""
         LetterList = ""
         lives = 10
