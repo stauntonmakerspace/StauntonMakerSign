@@ -132,15 +132,17 @@ def read_guesses(word):
         screen.blit(text, (200, 450))
         text = font.render("{}".format("Guess a letter!"), True, "Blue")
         screen.blit(text, (200, 500))
-        x = 195
+        x = 185
         for c in ascii_uppercase:
-            x+=25
+            x+=15
             if c in incorrect:
                 color = "Red"
             else:
                 color = "Green"
             text = font.render("{}".format(c), True, color)
+            text_width, text_height = font.size(c)
             screen.blit(text, (x, 550))
+            x += text_width
         for ev in pygame.event.get():
             if ev.type == pygame.KEYDOWN:
                 if ev.key in keys:
