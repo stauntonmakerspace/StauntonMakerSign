@@ -86,7 +86,11 @@ def set_word():
     return string.lower()
 
 
-class LineCountException:
+class LineCountException(Exception):
+    pass
+
+
+class WordLengthException(Exception):
     pass
 
 
@@ -98,8 +102,10 @@ def draw_phrase(w):
     linenum = 1
     ln = ""
     for word in words:
-        if len(word) < 20-current:
-            current += len(word)+1
+        if len(word) > 21:
+            raise WordLengthException("Word too long")
+        if len(word) < 21-current:
+            current += len(word)+2
             ln = ln + word + " "
             print(ln)
         else:
@@ -177,7 +183,7 @@ def read_guesses(word):
                     if word[s] in correct:
                         font = pygame.font.SysFont("arial", size=50)
                         text = font.render("{}".format(word[s]), True, "Red")
-                        screen.blit(text, (lines[line].centerx - 15, lines[line].y - 70))
+                        screen.blit(text, (lines[line].centerx - 15, lines[line].y - 50))
         if check_win():
             won = True
         if lives == 0:
@@ -315,6 +321,10 @@ def game():
         word_search(word)
     except LineCountException:
         word = ""
+        LetterList = " "
+    except WordLengthException:
+        word = ""
+        LetterList = " "
     if won:
         win(word)
         won = False
