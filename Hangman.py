@@ -22,9 +22,9 @@ keys = [pygame.K_q, pygame.K_w, pygame.K_e, pygame.K_r, pygame.K_t, pygame.K_y, 
         pygame.K_c, pygame.K_v, pygame.K_b, pygame.K_n, pygame.K_m, pygame.K_PERIOD, pygame.K_QUESTION,
         pygame.K_EXCLAIM, pygame.K_SPACE]
 lines = []
-correct = ""
+correct = " "
 incorrect = []
-LetterList = ""
+LetterList = " "
 deathColor = "red"
 fc = "red"
 word_set = False
@@ -56,7 +56,7 @@ def set_word():
         font = pygame.font.SysFont("arial", size=40)
         text = font.render("{}".format("Enter a word or phrase for someone to guess!"), True, "Blue")
         screen.blit(text, (200, 450))
-        text = font.render("{}".format("No capital letters.  Press esc to confirm your entry"), True, "Blue")
+        text = font.render("{}".format("Press esc to confirm your entry"), True, "Blue")
         screen.blit(text, (200, 550))
         for ev in pygame.event.get():
             if ev.type == pygame.KEYDOWN:
@@ -66,11 +66,7 @@ def set_word():
                         string += str(ev.unicode)
                         letterCount += 1
                 if ev.key == pygame.K_ESCAPE:
-                    if len(string) > 28:
-                        string = ""
-                        set_word()
-                    else:
-                        done = True
+                    done = True
                 if ev.key == pygame.K_BACKSPACE:
                     string = string[0:len(string)-1]
                     letterCount -= 1
@@ -87,26 +83,49 @@ def set_word():
         if idleClock > 300:
             idle = True
             return("")
-    return string
+    return string.lower()
 
 
-def draw_word(w):
+class LineCountException:
+    pass
+
+
+def draw_phrase(w):
     global lines
     lines.clear()
-    for i in range(len(w)):
-        if i < 14:
-            x = (window_width / len(w) + (150 * i))
-            y = window_height - 200
-        elif i >= 14:
-            x = (window_width / len(w) + (150 * (i - 14)))
-            y = window_height - 80
+    words = w.split(" ")
+    current = 0
+    linenum = 1
+    ln = ""
+    for word in words:
+        if len(word) < 20-current:
+            current += len(word)+1
+            ln = ln + word + " "
+            print(ln)
+        else:
+            draw_line(ln, linenum)
+            linenum += 1
+            if linenum > 3:
+                raise LineCountException("Too many lines")
+            current = 0
+            ln = word + " "
+    draw_line(ln, linenum)
 
-        if w[i] != " ":
+
+
+def draw_line(ln,linenum):
+    global lines
+    print("Line draw " + ln)
+    for i in range(len(ln)):
+        x = ((window_width / 2 - (len(ln)*70/2) + 50) + (70 * i))
+        y = window_height - 200 + (60*linenum)
+
+        if ln[i] != " ":
             color = "white"
-        elif w[i] == " ":
+        elif ln[i] == " ":
             color = "black"
 
-        line = pygame.draw.line(screen, color, (x, y), ((x + 100), y))
+        line = pygame.draw.line(screen, color, (x, y), ((x + 50), y))
         line.y = y
         lines.append(line)
 
@@ -125,7 +144,8 @@ def read_guesses(word):
             hidden = True
         clock.tick(60)
         screen.fill("black")
-        draw_word(word)
+        lines = []
+        draw_phrase(word)
         pygame.draw.rect(screen, color=fc, rect=(40, 160, 1350 - (135 * lives), 200))
         font = pygame.font.SysFont("arial", size=40)
         text = font.render("{}".format("Someone entered a word for you!"), True, "Blue")
@@ -134,11 +154,13 @@ def read_guesses(word):
         screen.blit(text, (200, 500))
         x = 185
         for c in ascii_uppercase:
-            x+=15
+            x += 15
             if c in incorrect:
                 color = "Red"
-            else:
+            elif c.lower() in correct:
                 color = "Green"
+            else:
+                color = "Blue"
             text = font.render("{}".format(c), True, color)
             text_width, text_height = font.size(c)
             screen.blit(text, (x, 550))
@@ -153,9 +175,9 @@ def read_guesses(word):
             for s in range(len(word)):
                 if line == s:
                     if word[s] in correct:
-                        font = pygame.font.SysFont("arial", size=100)
+                        font = pygame.font.SysFont("arial", size=50)
                         text = font.render("{}".format(word[s]), True, "Red")
-                        screen.blit(text, (lines[line].centerx - 30, lines[line].y - 130))
+                        screen.blit(text, (lines[line].centerx - 15, lines[line].y - 70))
         if check_win():
             won = True
         if lives == 0:
@@ -202,9 +224,9 @@ def loss(word):
         for line in range(len(lines)):
             for s in range(len(word)):
                 if line == s:
-                    font = pygame.font.SysFont("arial", size=100)
+                    font = pygame.font.SysFont("arial", size=50)
                     text = font.render("{}".format(word[s]), True, "Red")
-                    screen.blit(text, (lines[line].centerx-30, lines[line].y - 150))
+                    screen.blit(text, (lines[line].centerx-15, lines[line].y - 70))
         #draw_word(word)
         font = pygame.font.SysFont("arial", size=100)
         text = font.render("{}".format(f"You ran out of lives!"), True, "RED")
@@ -261,21 +283,19 @@ def win(word):
             r = random.randint(0, 255)
             g = random.randint(0, 255)
             b = random.randint(0, 255)
-        for line in range(len(lines)):
-            for s in range(len(word)):
-                if line == s:
-                    #draw_word(word)
-                    font = pygame.font.SysFont("arial", size=100)
-                    text = font.render("{}".format(word[s]), True, "Blue")
-                    screen.blit(text, (lines[line].centerx - 30, lines[line].y - 150))
         font = pygame.font.SysFont("arial", size=100)
-        text = font.render("{}".format(f"You won!"), True, "RED")
-        screen.blit(text, (1536 / 2, 960 / 2))
+        text = font.render("{}".format(f"You won!"), True, pygame.Color(r,g,b))
+        text_width, text_height = font.size("You won!")
+        screen.blit(text, ((window_width / 2)-text_width/2, window_height / 2))
         sign.sample_surface(screen)
         sign.draw(screen)
         pygame.display.flip()
         if count >= 4:
             runs = False
+        for ev in pygame.event.get():
+            if ev.type == pygame.KEYDOWN:
+                if ev.key in keys:
+                    runs = False
 
 def game():
     global won
@@ -291,23 +311,26 @@ def game():
         word = set_word()
         if not word:
             balls_lib.show_balls(screen, sign)
-    word_search(word)
+    try:
+        word_search(word)
+    except LineCountException:
+        word = ""
     if won:
         win(word)
         won = False
         word = ""
         lines = []
-        correct = ""
+        correct = " "
         incorrect = []
-        LetterList = ""
+        LetterList = " "
         lives = 10
     elif lost:
         loss(word)
         lost = False
         lines = []
         incorrect = []
-        correct = ""
-        LetterList = ""
+        correct = " "
+        LetterList = " "
         lives = 10
         word = ""
     game()
